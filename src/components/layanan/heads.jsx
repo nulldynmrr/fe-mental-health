@@ -5,7 +5,7 @@ const Heads = () => {
         <>
         <div className="flex flex-col gap-7 items-center justify-center">
 
-        <div className="font-bold text-4xl">
+        <div className="font-bold text-4xl text-neut-800">
             Layanan Kami
         </div>
 
