@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa6";
@@ -8,8 +9,57 @@ import { CgMail } from "react-icons/cg";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
 import Button from "@/components/button/page";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email wajib diisi")
+    .email("Format email tidak valid"),
+  password: z
+    .string()
+    .min(1, "Password wajib diisi")
+    .min(6, "Password minimal 6 karakter"),
+});
 
 const Login = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const validations = loginSchema.safeParse(formData);
+
+    if (!validations.success) {
+      const newErrors = {};
+      validations.error.issues.forEach((err) => {
+        newErrors[err.path[0]] = err.message;
+      });
+      setErrors(newErrors);
+      return;
+    }
+
+    // fetch API
+
+    setErrors({ email: "", password: "" });
+    router.push("/");
+  };
+
   return (
     <div className="flex min-h-screen">
       <div className="hidden md:flex w-1/2 bg-primary-50 justify-center items-center">
@@ -40,12 +90,15 @@ const Login = () => {
               Masuk Untuk Melanjutkan
             </p>
 
-            <form className="space-y-4">
+            <form onSubmit={onSubmit} noValidate className="space-y-4">
               <InputField
                 label="Email"
                 name="email"
                 type="email"
                 placeholder="Masukkan email"
+                value={formData.email}
+                onChange={handleChange}
+                message={errors.email}
                 icon={CgMail}
               />
               <InputField
@@ -53,6 +106,9 @@ const Login = () => {
                 name="password"
                 type="password"
                 placeholder="Masukkan password"
+                value={formData.password}
+                onChange={handleChange}
+                message={errors.password}
                 icon={LuLock}
               />
 

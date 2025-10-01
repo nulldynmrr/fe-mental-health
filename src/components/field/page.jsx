@@ -8,6 +8,9 @@ const InputField = ({
   type = "text",
   placeholder,
   icon: Icon,
+  message,
+  value,
+  onChange,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -37,8 +40,10 @@ const InputField = ({
           name={name}
           type={inputType}
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
           className={`w-full border border-neut-200 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none
-            ${Icon ? "pl-12" : "pl-4"}`}
+            ${Icon ? "pl-12" : "pl-4"} ${message ? "border-red-500" : ""}`}
         />
 
         {isPassword && (
@@ -55,6 +60,8 @@ const InputField = ({
           </button>
         )}
       </div>
+
+      {message && <p className="mt-1 text-xs text-red-500">{message}</p>}
     </div>
   );
 };
