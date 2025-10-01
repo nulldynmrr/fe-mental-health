@@ -1,5 +1,5 @@
 import Navbar from "@/components/navbar/page";
-import UpperHero from "@/components/upperHero/wrap";
+import UpperHero from "@/components/upperHero/page";
 import Services from "@/components/layanan/page";
 
 const Dashboard = () => {
@@ -7,9 +7,7 @@ const Dashboard = () => {
 
         <div>
         <Navbar />
-        
         <UpperHero/>
-
         <Services/>
 
         </div>
