@@ -2,9 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa6";
-import { FaLinkedinIn } from "react-icons/fa";
 import { CgMail } from "react-icons/cg";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
@@ -12,12 +9,8 @@ import Button from "@/components/button/page";
 import { z } from "zod";
 
 const loginSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, "Nama Depan wajib diisi"),
-  lastName: z
-    .string()
-    .min(1, "Nama Belakang wajib diisi"),
+  firstName: z.string().min(1, "Nama Depan wajib diisi"),
+  lastName: z.string().min(1, "Nama Belakang wajib diisi"),
   email: z
     .string()
     .min(1, "Email wajib diisi")
@@ -37,7 +30,8 @@ const Register = () => {
     password: "",
   });
   const [errors, setErrors] = useState({
-
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
   });
@@ -65,8 +59,7 @@ const Register = () => {
 
     // fetch API
 
-    setErrors({ firstName: "",
-    lastName: "",email: "", password: "" });
+    setErrors({ firstName: "", lastName: "", email: "", password: "" });
     router.push("/");
   };
 
@@ -109,16 +102,16 @@ const Register = () => {
                   placeholder="Masukkan Nama depan"
                   value={formData.firstName}
                   onChange={handleChange}
-                  message={errors.email}
+                  message={errors.firstName}
                 />
                 <InputField
                   label="Nama Belakang"
                   name="lastName"
                   type="text"
                   placeholder="Masukkan Nama belakang"
-                  value={formData.email}
+                  value={formData.lastName}
                   onChange={handleChange}
-                  message={errors.email}
+                  message={errors.lastName}
                 />
               </div>
               <InputField
