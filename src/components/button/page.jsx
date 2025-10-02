@@ -19,6 +19,8 @@ const Button = ({
       "bg-white text-primary-500 border border-primary-500 hover:bg-primary-50",
     disabled: "bg-neut-300 text-white cursor-not-allowed",
     outline: "border border-neut-300 text-neut-300 hover:bg-neut-100",
+    round: "bg-primary-500 text-white hover:bg-primary-600 rounded-[20px] !rounded-[20px] px-7 py-1",
+    about: "bg-primary-500 text-white hover:bg-primary-600 rounded-l px-8 py-4 shadow-md cursor-pointer",
   };
 
   const widthStyle = fullWidth ? "w-full" : "";

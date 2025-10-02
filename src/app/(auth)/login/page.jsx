@@ -64,7 +64,7 @@ const Login = () => {
     <div className="flex min-h-screen">
       <div className="hidden md:flex w-1/2 bg-primary-50 justify-center items-center">
         <Image
-          src="/assets/login.svg"
+          src="/assets/login.svg"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
           alt="Login Illustration"
           width={400}
           height={400}
