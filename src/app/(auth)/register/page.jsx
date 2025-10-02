@@ -3,22 +3,31 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { CgMail } from "react-icons/cg";
+import { MdPhoneAndroid } from "react-icons/md";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
 import Button from "@/components/button/page";
 import { z } from "zod";
 
-const loginSchema = z.object({
+const regisSchema = z.object({
   firstName: z.string().min(1, "Nama Depan wajib diisi"),
   lastName: z.string().min(1, "Nama Belakang wajib diisi"),
   email: z
     .string()
-    .min(1, "Email wajib diisi")
-    .email("Format email tidak valid"),
+    .email("Format email tidak valid")
+    .min(1, "Email wajib diisi"),
+  numberPhone: z
+    .string()
+    .min(10, "Nomor telepon minimal 10 digit")
+    .regex(
+      /^\(\+\d{1,4}\)\s?\d{6,15}$/,
+      "Format nomor telepon tidak valid, contoh : "
+    )
+    .min(1, "Nomor telepon wajib diisi"),
   password: z
     .string()
-    .min(1, "Password wajib diisi")
-    .min(6, "Password minimal 6 karakter"),
+    .min(6, "Password minimal 6 karakter")
+    .min(1, "Password wajib diisi"),
 });
 
 const Register = () => {
@@ -27,12 +36,14 @@ const Register = () => {
     firstName: "",
     lastName: "",
     email: "",
+    numberPhone: "",
     password: "",
   });
   const [errors, setErrors] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    numberPhone: "",
     password: "",
   });
 
@@ -46,7 +57,7 @@ const Register = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const validations = loginSchema.safeParse(formData);
+    const validations = regisSchema.safeParse(formData);
 
     if (!validations.success) {
       const newErrors = {};
@@ -59,7 +70,13 @@ const Register = () => {
 
     // fetch API
 
-    setErrors({ firstName: "", lastName: "", email: "", password: "" });
+    setErrors({
+      firstName: "",
+      lastName: "",
+      email: "",
+      numberPhone: "",
+      password: "",
+    });
     router.push("/");
   };
 
@@ -115,14 +132,24 @@ const Register = () => {
                 />
               </div>
               <InputField
-                label="Nomor Telepon"
-                name="numberPhone"
-                type="tel"
+                label="Email"
+                name="email"
+                type="email"
                 placeholder="Masukkan email"
                 value={formData.email}
                 onChange={handleChange}
                 message={errors.email}
                 icon={CgMail}
+              />
+              <InputField
+                label="Nomor Telepon"
+                name="numberPhone"
+                type="tel"
+                placeholder="(+123) 9876543210"
+                value={formData.numberPhone}
+                onChange={handleChange}
+                message={errors.numberPhone}
+                icon={MdPhoneAndroid}
               />
               <InputField
                 label="Password"
