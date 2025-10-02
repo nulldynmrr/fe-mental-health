@@ -156,7 +156,7 @@ const NewsCard = () => {
                   <span className="text-gray-500 text-sm font-semibold">
                     {article.readingTime}
                   </span>
-                  <Button text="Baca Selengkapnya" variant="primary" />
+                  <Button text="Baca Selengkapnya" variant="primary"/>
                 </div>
               </div>
             </div>
