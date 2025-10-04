@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/button/page";
+import { useRouter} from "next/navigation";
 
 const Navbar = () => {
+  const router = useRouter();
   const navItems = ["Home", "Layanan", "FAQ", "Tentang kami", "Hubungi kami"];
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -41,7 +43,11 @@ const Navbar = () => {
 
       {/* right */}
       <div>
-        <Button text="Masuk" variant="round" />
+        <Button
+          text="Masuk"
+          variant="round"
+          onClick={() => router.push("/login")}
+        />
       </div>
     </nav>
   );
