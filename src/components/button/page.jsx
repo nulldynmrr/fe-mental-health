@@ -9,6 +9,7 @@ const Button = ({
   onClick,
   fullWidth = false,
   maxWidth,
+  loading = false,
 }) => {
   const baseStyle =
     "flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200";
@@ -19,8 +20,10 @@ const Button = ({
       "bg-white text-primary-500 border border-primary-500 hover:bg-primary-50",
     disabled: "bg-neut-300 text-white cursor-not-allowed",
     outline: "border border-neut-300 text-neut-300 hover:bg-neut-100",
-    round: "bg-primary-500 text-white hover:bg-primary-600 rounded-[20px] !rounded-[20px] px-7 py-1",
-    about: "bg-primary-500 text-white hover:bg-primary-600 rounded-l px-8 py-4 shadow-md cursor-pointer",
+    round:
+      "bg-primary-500 text-white hover:bg-primary-600 rounded-[20px] !rounded-[20px] px-7 py-1",
+    about:
+      "bg-primary-500 text-white hover:bg-primary-600 rounded-l px-8 py-4 shadow-md cursor-pointer",
   };
 
   const widthStyle = fullWidth ? "w-full" : "";
@@ -34,12 +37,18 @@ const Button = ({
         variants[variant]
       } ${widthStyle} ${customMaxWidth} ${isIconOnly ? "p-3 text-xl" : ""}`}
       onClick={onClick}
-      disabled={variant === "disabled"}
+      disabled={variant === "disabled" || loading}
       style={maxWidth ? { maxWidth } : {}}
     >
-      {icon && iconPosition === "left" && <span>{icon}</span>}
+      {loading && (
+        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+      )}
+
+      {!loading && icon && iconPosition === "left" && <span>{icon}</span>}
+
       {text && <span>{text}</span>}
-      {icon && iconPosition === "right" && <span>{icon}</span>}
+
+      {!loading && icon && iconPosition === "right" && <span>{icon}</span>}
     </button>
   );
 };
