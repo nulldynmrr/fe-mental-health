@@ -7,47 +7,56 @@ import { MdPhoneAndroid } from "react-icons/md";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
 import Button from "@/components/button/page";
+import request from "@/utils/request";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 import { z } from "zod";
 
-const regisSchema = z.object({
-  firstName: z.string().min(1, "Nama Depan wajib diisi"),
-  lastName: z.string().min(1, "Nama Belakang wajib diisi"),
-  email: z
-    .string()
-    .email("Format email tidak valid")
-    .min(1, "Email wajib diisi"),
-  numberPhone: z
-    .string()
-    .min(10, "Nomor telepon minimal 10 digit")
-    .regex(
-      /^\(\+\d{1,4}\)\s?\d{6,15}$/,
-      "Format nomor telepon tidak valid, contoh : "
-    )
-    .min(1, "Nomor telepon wajib diisi"),
-  password: z
-    .string()
-    .min(6, "Password minimal 6 karakter")
-    .min(1, "Password wajib diisi"),
-});
+const regisSchema = z
+  .object({
+    first_name: z.string().min(1, "Nama Depan wajib diisi"),
+    last_name: z.string().min(1, "Nama Belakang wajib diisi"),
+    email: z
+      .string()
+      .email("Format email tidak valid")
+      .min(1, "Email wajib diisi"),
+    phone_number: z
+      .string()
+      .regex(
+        /^\+628\d{8,}$/,
+        "Nomor telepon harus diawali dengan +628 dan memiliki minimal 11 digit."
+      )
+      .min(1, "Nomor telepon wajib diisi"),
+    password: z
+      .string()
+      .regex(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
+        "Password harus mengandung minimal 1 huruf kapital dan 1 karakter spesial"
+      )
+      .min(8, "Password minimal 8 karakter")
+      .min(1, "Password wajib diisi"),
+  })
+  .passthrough();
 
 const Register = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    numberPhone: "",
+    phone_number: "",
     password: "",
   });
   const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    numberPhone: "",
+    phone_number: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  const onChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     if (errors[name]) {
@@ -57,6 +66,8 @@ const Register = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     const validations = regisSchema.safeParse(formData);
 
     if (!validations.success) {
@@ -65,19 +76,47 @@ const Register = () => {
         newErrors[err.path[0]] = err.message;
       });
       setErrors(newErrors);
+      setLoading(false);
       return;
     }
 
-    // fetch API
+    try {
+      const response = await request.post("/auth/register", formData, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-    setErrors({
-      firstName: "",
-      lastName: "",
-      email: "",
-      numberPhone: "",
-      password: "",
-    });
-    router.push("/");
+      if (response.status === 200 || response.data.code === 201) {
+        Cookies.set("token", response.data.data.access_token);
+        toast.dismiss();
+        toast.success("Register Berhasil");
+        router.push("/verify-email");
+        return;
+      }
+    } catch (err) {
+      toast.dismiss();
+      // cek dari server
+      const errorMessage =
+        err.response?.data?.errors?.validation?.email?.[0] ||
+        err.response?.data?.errors?.message ||
+        err.response?.data?.message ||
+        "Terjadi kesalahan saat registrasi.";
+
+      if (errorMessage.includes("Email already taken")) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "Email sudah digunakan.",
+        }));
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setErrors((prev) => ({
+        ...prev,
+        password: "",
+      }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,21 +153,21 @@ const Register = () => {
               <div className="flex space-x-4">
                 <InputField
                   label="Nama Depan"
-                  name="firstName"
+                  name="first_name"
                   type="text"
                   placeholder="Masukkan Nama depan"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  message={errors.firstName}
+                  value={formData.first_name}
+                  onChange={onChange}
+                  message={errors.first_name}
                 />
                 <InputField
                   label="Nama Belakang"
-                  name="lastName"
+                  name="last_name"
                   type="text"
                   placeholder="Masukkan Nama belakang"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  message={errors.lastName}
+                  value={formData.last_name}
+                  onChange={onChange}
+                  message={errors.last_name}
                 />
               </div>
               <InputField
@@ -137,18 +176,18 @@ const Register = () => {
                 type="email"
                 placeholder="Masukkan email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={onChange}
                 message={errors.email}
                 icon={CgMail}
               />
               <InputField
                 label="Nomor Telepon"
-                name="numberPhone"
+                name="phone_number"
                 type="tel"
-                placeholder="(+123) 9876543210"
-                value={formData.numberPhone}
-                onChange={handleChange}
-                message={errors.numberPhone}
+                placeholder="+6281122334444"
+                value={formData.phone_number}
+                onChange={onChange}
+                message={errors.phone_number}
                 icon={MdPhoneAndroid}
               />
               <InputField
@@ -157,7 +196,7 @@ const Register = () => {
                 type="password"
                 placeholder="Masukkan password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={onChange}
                 message={errors.password}
                 icon={LuLock}
               />
