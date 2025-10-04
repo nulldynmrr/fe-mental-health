@@ -9,13 +9,16 @@ import { CgMail } from "react-icons/cg";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
 import Button from "@/components/button/page";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
+import request from "@/utils/request";
 import { z } from "zod";
 
 const loginSchema = z.object({
   email: z
     .string()
-    .email("Format email tidak valid")
-    .min(1, "Email wajib diisi"),
+    // .email("Format email tidak valid")
+    .min(1, "Username atau Email wajib diisi"),
   password: z
     .string()
     .min(6, "Password minimal 6 karakter")
@@ -24,6 +27,7 @@ const loginSchema = z.object({
 
 const Login = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,8 +36,18 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    const savedData = localStorage.getItem("rememberMeData");
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setFormData(parsed);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const onChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     if (errors[name]) {
@@ -43,6 +57,19 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    let identifier = formData.email;
+
+    // add "@gmail.com"
+    if (!identifier.includes("@")) {
+      identifier = identifier + "@gmail.com";
+    }
+
+    const payload = {
+      email: identifier,
+      password: formData.password,
+    };
+
     const validations = loginSchema.safeParse(formData);
 
     if (!validations.success) {
@@ -51,20 +78,44 @@ const Login = () => {
         newErrors[err.path[0]] = err.message;
       });
       setErrors(newErrors);
+      setLoading(false);
       return;
     }
 
     // fetch API
+    try {
+      const response = await request.post("/auth/login", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-    setErrors({ email: "", password: "" });
-    router.push("/");
+      if (response.status === 200 || response.data.code === 201) {
+        Cookies.set("token", response.data.data.access_token);
+        toast.dismiss();
+        toast.success("Login Berhasil");
+
+        // simpan ke localstorage
+        if (rememberMe) {
+          localStorage.setItem("rememberMeData", JSON.stringify(formData));
+        } else {
+          localStorage.removeItem("rememberMeData");
+        }
+
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setLoading(false);
+      toast.dismiss();
+      toast.error(error.response.data.message);
+      setErrors({ email: "", password: "" });
+      return;
+    }
   };
 
   return (
     <div className="flex min-h-screen">
       <div className="hidden md:flex w-1/2 bg-primary-50 justify-center items-center">
         <Image
-          src="/assets/login.svg"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+          src="/assets/login.svg"
           alt="Login Illustration"
           width={400}
           height={400}
@@ -92,12 +143,12 @@ const Login = () => {
 
             <form onSubmit={onSubmit} noValidate className="space-y-4">
               <InputField
-                label="Email"
+                label="Username"
                 name="email"
                 type="email"
-                placeholder="Masukkan email"
+                placeholder="Masukkan username atau email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={onChange}
                 message={errors.email}
                 icon={CgMail}
               />
@@ -107,14 +158,19 @@ const Login = () => {
                 type="password"
                 placeholder="Masukkan password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={onChange}
                 message={errors.password}
                 icon={LuLock}
               />
 
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="form-checkbox" />
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={() => setRememberMe(!rememberMe)}
+                    className="accent-primary-500 border-gray-300 rounded focus:ring-primary-500"
+                  />
                   <span className="text-neut-400">Ingat Saya</span>
                 </label>
                 <a href="#" className="text-primary-500 hover:underline">
