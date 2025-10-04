@@ -31,7 +31,7 @@ const expiredTokenHandler = () => {
   // store.dispatch(getLoginData({}))
   localStorage.clear();
   Cookies.remove("token");
-  window.location.href = "/login"; //di uncomment saat sudah integrasi api login
+  window.location.href = "/login";
   // return error;
 };
 
