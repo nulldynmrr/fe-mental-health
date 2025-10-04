@@ -6,20 +6,16 @@ import NewsSection from "@/components/berita/page";
 import Footer from "@/components/footer/page";
 
 const Dashboard = () => {
-    return (
-
-        <div>
-        <Navbar />
-        <UpperHero/>
-        <Services/>
-        <VideoSection/>
-        <NewsSection/>
-        <Footer/>
-        </div>
-
-    );
-
-
+  return (
+    <div>
+      <Navbar />
+      <UpperHero />
+      <Services />
+      <VideoSection />
+      <NewsSection />
+      <Footer />
+    </div>
+  );
 };
 
 export default Dashboard;
