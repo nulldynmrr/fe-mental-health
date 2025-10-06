@@ -1,16 +1,17 @@
 import React from "react";
 
 const MenuCards = () => {
-
   const FeatureCard = ({ title, desc, icon }) => {
-  return (
-    <div className="px-17 shadow-[3.12px_9.37px_21.20px_0_rgba(0,0,0,0.03)] rounded-2xl bg-white flex flex-col items-start pl-10 gap-3 border-2 py-15 border-primary-500 cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
-      <img src={icon} alt={title} className="w-12 h-12" />
-      <h3 className="text-2xl text-primary-500 font-bold leading-[24px] text-left">{title}</h3>
-      <p className="text-sm text-gray-500 text-left">{desc}</p>
-    </div>
-  );
-};
+    return (
+      <div className="px-8 py-10 shadow-[3.12px_9.37px_21.20px_0_rgba(0,0,0,0.03)] rounded-2xl bg-white flex flex-col items-start gap-2 border border-primary-500 cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+        <img src={icon} alt={title} className="w-10 h-10" />
+        <h3 className="text-xl text-primary-500 font-semibold leading-tight text-left">
+          {title}
+        </h3>
+        <p className="text-sm text-gray-500 text-left leading-snug">{desc}</p>
+      </div>
+    );
+  };
 
   const features = [
     {
@@ -42,13 +43,14 @@ const MenuCards = () => {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-6">
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
         {features.slice(0, 2).map((f, idx) => (
           <FeatureCard key={idx} {...f} />
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-6 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
         {features.slice(2).map((f, idx) => (
           <FeatureCard key={idx} {...f} />
         ))}
