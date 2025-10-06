@@ -99,7 +99,7 @@ const Register = () => {
         err.response?.data?.errors?.validation?.email?.[0] ||
         err.response?.data?.errors?.message ||
         err.response?.data?.message ||
-        "Terjadi kesalahan saat registrasi.";
+        "Email sudah digunakan.";
 
       if (errorMessage.includes("Email already taken")) {
         setErrors((prev) => ({
