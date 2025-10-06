@@ -48,8 +48,6 @@ const VideoCards = () => {
       thumbnail: "assets/thumbnails/mental-health.svg",
     },
     {
-
-      
       date: "20 April 2024",
       title: "Pentingnya Menjaga Kesehatan Mental untuk Hidup",
       description:
@@ -63,8 +61,6 @@ const VideoCards = () => {
         "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
       thumbnail: "assets/thumbnails/gangguan.svg",
     },
-
-  
   ];
 
   const VideoCards = () => {
@@ -82,18 +78,24 @@ const VideoCards = () => {
   const [expanded, setExpanded] = useState(false);
   const displayedVideos = expanded ? videos : videos.slice(0, 4);
 
-
   return (
     <section className="max-w-7xl mx-auto px-2 py-5">
-     
-      <div className="flex flex-wrap gap-5">
+      <div className="flex flex-wrap gap-5 justify-center">
         {displayedVideos.map((video, idx) => (
           <div
             key={idx}
             style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.5)" }}
-            className="bg-white rounded-xl pt-4 border-2 border-transparent hover:border-primary-500 transition overflow-hidden flex-[1_1_calc(25%-1.5rem)] h-auto cursor-pointer"
+            className="
+            bg-white rounded-xl pt-4 border-2 border-transparent hover:border-primary-500 transition overflow-hidden
+            cursor-pointer
+            flex-[1_1_calc(100%-1rem)]
+            sm:flex-[1_1_calc(50%-1.25rem)]
+            lg:flex-[1_1_calc(25%-1.25rem)]
+            h-auto
+            max-w-[400px] mx-auto
+  "
           >
-           
+            {/* Thumbnail */}
             <div className="relative aspect-[16/9] cursor-pointer">
               <img
                 src={video.thumbnail}
@@ -109,7 +111,7 @@ const VideoCards = () => {
               </button>
             </div>
 
-       
+            {/* Content */}
             <div className="p-3 py-5">
               <div className="flex items-center text-gray-500 text-sm mb-2 gap-2">
                 <img
@@ -126,6 +128,7 @@ const VideoCards = () => {
         ))}
       </div>
 
+      {/* Button */}
       <div className="flex justify-end items-end mt-10">
         <button
           onClick={() => setExpanded(!expanded)}
