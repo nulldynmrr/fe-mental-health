@@ -46,7 +46,7 @@ const SmartJournaling = () => {
 
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold mb-6">Jurnal Pintar</h1>
-          <HiOutlineDotsVertical className="text-neut-900 font-4xl" />
+          <HiOutlineDotsVertical className="text-neut-950 font-6xl" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-h-[280px]">
