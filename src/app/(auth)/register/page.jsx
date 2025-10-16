@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CgMail } from "react-icons/cg";
 import { MdPhoneAndroid } from "react-icons/md";
@@ -88,6 +88,8 @@ const Register = () => {
       if (response.status === 200 || response.data.code === 201) {
         Cookies.set("token", response.data.data.access_token);
         toast.dismiss();
+        //saved email
+        localStorage.setItem("email", formData.email);
         toast.success("Register Berhasil");
         router.push("/verify-email");
         return;
