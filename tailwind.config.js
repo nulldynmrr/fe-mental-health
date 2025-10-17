@@ -1,6 +1,9 @@
 module.exports = {
   theme: {
     extend: {
+      animation: {
+        "pulse-slow": "pulse 3s ease-in-out infinite",
+      },
       colors: {
         primary: {
           50: "var(--color-primary-50)",
@@ -24,8 +27,5 @@ module.exports = {
     },
   },
 
-  plugins: [
-    require('@tailwindcss/line-clamp'),
-  ],
-  
+  plugins: [require("@tailwindcss/line-clamp")],
 };
