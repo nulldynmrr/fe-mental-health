@@ -17,3 +17,11 @@
   --color-neut-900: #3d3d3d;
   --color-neut-950: #000000;
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; 
+}
+.no-scrollbar {
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
