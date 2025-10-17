@@ -100,7 +100,7 @@ const NewsCard = () => {
             style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.5)" }}
             className="bg-white rounded-xl overflow-hidden border border-gray-200 pt-4 flex flex-col h-full"
           >
-            {/* Thumbnail */}
+          
             <div className="relative aspect-[16/9] px-4">
               <img
                 src={article.thumbnail}
@@ -109,7 +109,7 @@ const NewsCard = () => {
               />
             </div>
 
-            {/* Content */}
+           
             <div className="p-4 flex flex-col h-full">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center text-gray-500 text-sm gap-2">
@@ -121,18 +121,18 @@ const NewsCard = () => {
                   {article.date}
                 </div>
 
-                {/* Title - clamp 2 lines */}
+              
                 <h3 className="font-semibold text-base leading-snug text-neut-900 line-clamp-2">
                   {article.title}
                 </h3>
 
-                {/* Description - clamp 3 lines */}
+               
                 <p className="text-neut-600 text-sm line-clamp-3">
                   {article.description}
                 </p>
               </div>
 
-              {/* Footer */}
+        
               <div className="mt-auto">
                 <div className="flex flex-row gap-3 mt-4">
                   <Image
@@ -164,7 +164,7 @@ const NewsCard = () => {
         ))}
       </div>
 
-      {/* Expand button */}
+
       <div className="flex justify-end items-end mt-10 border-t border-neut-50 pt-3">
         <button
           onClick={() => setExpanded(!expanded)}
