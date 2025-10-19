@@ -2,7 +2,7 @@ import React from "react";
 
 const Heads = () => {
   return (
-    <div className="flex flex-col gap-6 items-center justify-center px-6 sm:px-10 md:px-20 text-center">
+    <div className="flex flex-col gap-6 items-center justify-center px-6 mt-10 sm:px-10 md:px-20 text-center">
       <div className="font-bold text-3xl sm:text-4xl text-neut-800">
         Layanan Kami
       </div>

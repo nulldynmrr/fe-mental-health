@@ -4,7 +4,7 @@ import Image from "next/image";
 const AboutBox = () => {
   return (
   <div className="flex flex-col border-2 border-primary-500 shadow-[3.12px_9.37px_21.20px_0_rgba(0,0,0,0.06)] rounded-3xl w-full max-w-[1100px] mx-auto my-10 px-4 sm:px-8 md:px-12 lg:px-20 py-10">
-    {/* Header */}
+
     <h2 className="text-2xl sm:text-3xl font-semibold text-center text-neut-700 pt-5">
       <span className="bg-gradient-to-r from-[#0179B4] to-[#88D8FF] bg-clip-text text-transparent">
         Tentang:
@@ -12,9 +12,9 @@ const AboutBox = () => {
       Kesehatan Mental
     </h2>
 
-    {/* Konten */}
+  
     <div className="flex flex-col lg:flex-row items-center justify-center gap-10 mt-8">
-      {/* Gambar */}
+      
       <div className="flex justify-center w-full lg:w-auto">
         <Image
           src="/assets/tentangKesehatan.svg"
@@ -26,7 +26,7 @@ const AboutBox = () => {
         />
       </div>
 
-      {/* Deskripsi */}
+      
       <div className="leading-relaxed text-neut-600 text-justify w-full lg:w-[600px] text-[15px] sm:text-base">
         Tahukah kamu bahwa 1 dari 5 orang pernah mengalami masalah kesehatan
         mental, namun sebagian besar tidak menyadarinya hingga kondisinya

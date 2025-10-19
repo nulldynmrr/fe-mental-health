@@ -6,7 +6,7 @@ const Upper = () => {
   return (
     <div className="flex flex-row justify-between items-center mb-7">
 
-      <h1 className="text-3xl font-bold">Visualization</h1>
+      <h1 className="text-3xl font-bold">Histori</h1>
 
     
       <div className="pr-4">

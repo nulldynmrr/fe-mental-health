@@ -20,8 +20,10 @@ const Button = ({
       "bg-white text-primary-500 border border-primary-500 hover:bg-primary-50",
     disabled: "bg-neut-300 text-white cursor-not-allowed",
     outline: "border border-neut-300 text-neut-300 hover:bg-neut-100",
-    round:
-      "bg-primary-500 text-white hover:bg-primary-600 rounded-[20px] !rounded-[20px] px-7 py-1",
+    yetlogged:
+      "bg-primary-500 text-white hover:bg-primary-600 rounded-[20px] !rounded-[20px] px-7 py-1 cursor-pointer",
+    logged:
+      "bg-white text-primary-500 border-1 border-primary-500 : hover:bg-red-600 rounded-[20px] !rounded-[20px] px-7 py-1",
     about:
       "bg-primary-500 text-white hover:bg-primary-600 rounded-l px-5 py-2 text-sm sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-5 shadow-md cursor-pointer transition-all duration-200",
   };
