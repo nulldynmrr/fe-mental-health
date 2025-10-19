@@ -40,7 +40,7 @@ const MenuCards = () => {
       title: "Obrolan Anonim",
       desc: "Sesi obrolan anonim dengan pendamping atau komunitas untuk berbagi cerita, mengurangi beban, dan merasa didengar tanpa rasa khawatir.",
       icon: "/assets/icons/obrolanAnonim.svg",
-      href: "/obrolan-anonim",
+      href: "/obrolanAnonim",
     },
     {
       title: "Meditasi",
