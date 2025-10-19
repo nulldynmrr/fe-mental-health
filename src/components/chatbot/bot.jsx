@@ -4,27 +4,34 @@ import { HiThumbDown } from "react-icons/hi";
 
 const ChatBot = ({ text, time }) => {
   return (
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-lg">
-        🤖
-      </div>
-
-      <div>
-        <div className="bg-neut-50 rounded-xl pb-10 p-4 max-w-[70%] text-[15px] leading-relaxed">
+    <div className="relative flex flex-col items-start my-10">
+      {/* Wrapper biar actions sejajar bubble */}
+      <div className="relative max-w-[80%]">
+        {/* Chat Bubble */}
+        <div className="bg-neut-50 rounded-2xl p-4 pb-10 text-[15px] leading-relaxed shadow-sm border border-neut-100 relative">
           {text}
+
+          {/* Avatar Bot (setengah keluar di bawah kiri bubble) */}
+          <div className="absolute left-4 bottom-0 translate-y-1/2">
+            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-xl shadow-md border-2 border-white">
+              🤖
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 justify-end">
+        <div className="absolute right-0 -bottom-7 flex items-center gap-3 text-xs mt-3 text-neut-500">
           <span className="cursor-default">{time}</span>
-          <span className="hover:text-primary-500 cursor-pointer text-neut-600 bg-neut-50 w-10 h-5 flex justify-center items-center rounded-lg font-semibold">Salin</span>
-          <span className="hover:text-primary-500 cursor-pointer text-neut-600 bg-neut-50 w-30 h-5 flex justify-center items-center rounded-lg font-semibold">Membuat jawaban</span>
-          <div className="text-white bg-neut-50 flex gap-2 w-10 items-center justify-center h-5 rounded-lg">
-          <button className="hover:text-primary-500 text-neut-600">
-            <FaThumbsUp />
+          <button className="bg-neut-50 rounded-lg p-1 hover:text-primary-500 hover:underline transition-colors font-medium">
+            Salin
           </button>
-          <button className="hover:text-red-500 text-neut-600">
-            <HiThumbDown />
-          </button>
+        
+          <div className="flex bg-neut-50 rounded-lg p-1 items-center gap-2">
+            <button className="hover:text-primary-500 transition-colors">
+              <FaThumbsUp size={14} />
+            </button>
+            <button className="hover:text-red-500 transition-colors">
+              <HiThumbDown size={16} />
+            </button>
           </div>
         </div>
       </div>
