@@ -4,24 +4,24 @@ import Upper from "./upper";
 const Visualize = () => {
   const summary = [
     {
-      tanggal: "22.09.2025",
+      tanggal: "22/09/2025",
       cate: "Takut",
       text: "Kamu hari ini sedang ketakutan, seluruh tubuhmu tegang, setiap gerakanmu tampak ragu, dan matamu yang melebar terus memindai ruangan seolah ada ancaman tersembunyi yang tak terlihat. Kau benar-benar terlihat dikuasai oleh rasa takut, seperti seekor rusa yang terperangkap dalam lampu sorot.",
     },
 
     {
-      tanggal: "19.09.2025",
+      tanggal: "19/09/2025",
       cate: "Sedih",
       text: "Kamu hari ini sedang sedih, seluruh dirimu memancarkan aura kesedihan yang gelap dan pekat. Bahumu terkulai lesu, air matamu mungkin telah mengering, tetapi tatapanmu yang kosong ke kejauhan memperlihatkan betapa dalam dan beratnya beban duka yang sedang kau pikul di hati.",
     },
 
     {
-      tanggal: "02.09.2025",
+      tanggal: "02/09/2025",
       cate: "Marah",
       text: "Kamu hari ini sedang marah, rahangmu mengeras, napasmu memburu, dan kilatan tajam di matamu menunjukkan bahwa ada amarah besar yang terpendam, seolah kau sedang berusaha keras menahan letusan kekecewaan dan frustrasi yang siap menghancurkan apa pun di dekatmu.",
     },
     {
-      tanggal: "22.08.2025",
+      tanggal: "22/08/2025",
       cate: "Bahagia",
       text: "Kamu hari ini sedang bahagia sekali, seolah semua beban telah terangkat dari pundakmu. Melihatmu secerah ini benar-benar membuat suasana di sekitar kita ikut terasa positif dan menenangkan.",
     },

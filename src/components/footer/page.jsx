@@ -4,9 +4,9 @@ import Image from "next/image";
 const Footer = () => {
   return (
     <footer className="w-full bg-primary-50">
-      {/* Bagian atas */}
+     
       <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-start gap-10">
-        {/* Kiri */}
+       
         <div className="flex flex-col max-w-sm">
           <h2 className="text-2xl sm:text-3xl font-semibold">SoulSpace</h2>
           <p className="text-neut-500 font-semibold mt-4">
@@ -14,7 +14,7 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Kanan */}
+  
         <div className="flex flex-col sm:flex-row gap-10 sm:gap-20">
           <div>
             <h4 className="font-semibold text-primary-500">Support</h4>
@@ -40,7 +40,7 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Garis pemisah */}
+    
       <div className="max-w-6xl mx-auto px-6">
         <div className="border-t-2 border-blue-200"></div>
       </div>

@@ -5,16 +5,30 @@ import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const router = useRouter();
-  const navItems = ["Home", "Layanan", "FAQ", "Tentang kami", "Hubungi kami"];
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // nnti diganti
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const navItems = [
+    { name: "Home", target: "dashboard" },
+    { name: "Layanan", target: "layanan" },
+    { name: "FAQ", target: "faq" },
+    { name: "Tentang kami", target: "tentang" },
+    { name: "Hubungi kami", target: "footer" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleScrollTo = (target) => {
+    const element = document.getElementById(target);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <nav
@@ -24,45 +38,46 @@ const Navbar = () => {
           : "bg-transparent"
       }`}
     >
-    
       <div className="flex items-center gap-4 sm:gap-10 lg:gap-20">
         <div
           className="text-xl sm:text-2xl font-semibold cursor-pointer"
-          onClick={() => router.push("/")}
+          onClick={() => handleScrollTo("dashboard")}
         >
           SoulSpace
         </div>
 
-  
         <ul className="hidden md:flex gap-6 lg:gap-8">
           {navItems.map((item, idx) => (
-            <li
+            <div
               key={idx}
               className="text-gray-700 hover:text-primary-500 cursor-pointer transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                handleScrollTo(item.target);
+              }}
             >
-              {item}
-            </li>
+              {item.name}
+            </div>
           ))}
         </ul>
       </div>
 
-     
+      {/* yang ini ya kak */}
       <div className="hidden md:flex">
         {isLoggedIn ? (
           <Button
-            text="Dashboard"
-            variant="round"
-            onClick={() => router.push("/dashboard")}
+            text="Keluar"
+            variant="logged"
+            // onClick={() => router.push("/dashboard")} ini
           />
         ) : (
           <Button
             text="Masuk"
-            variant="round"
+            variant="yetlogged"
             onClick={() => router.push("/login")}
           />
         )}
       </div>
-
 
       <div className="md:hidden flex items-center">
         <button onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
@@ -100,15 +115,18 @@ const Navbar = () => {
         </button>
       </div>
 
-    
       {isOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md md:hidden flex flex-col items-start px-6 py-4 gap-4 z-40">
           {navItems.map((item, idx) => (
             <div
               key={idx}
               className="text-gray-700 hover:text-primary-500 cursor-pointer transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                handleScrollTo(item.target);
+              }}
             >
-              {item}
+              {item.name}
             </div>
           ))}
 
@@ -123,7 +141,10 @@ const Navbar = () => {
               <Button
                 text="Masuk"
                 variant="round"
-                onClick={() => router.push("/login")}
+                onClick={() => {
+                  setIsLoggedIn(true);
+                  router.push("/dashboard");
+                }}
               />
             )}
           </div>

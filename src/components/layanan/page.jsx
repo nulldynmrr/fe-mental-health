@@ -5,7 +5,7 @@ import AboutBox from "./about";
 
 const Services = () => {
     return (
-       <div className="flex flex-col items-center justify-center gap-20 px-25 py-15">
+       <div className="flex flex-col items-center justify-center gap-15 px-25 py-15">
         <Heads/>
         <MenuCards/>
 
