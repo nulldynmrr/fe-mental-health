@@ -2,13 +2,31 @@
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { playlistData } from "@/utils/playlist";
 import { FaPlay } from "react-icons/fa6";
 
-const MusicCard = () => {
+// props:
+// playlists: Array of category lists (format as in your utils/playlist)
+// favorites: Array of track objects saved by user
+// searchTerm: string
+// onPlay: function(track, context) where context = { type: 'category'|'favorites', categoryIdx }
+const MusicCard = ({ playlists = [], favorites = [], searchTerm = "", onPlay }) => {
   const scrollRefs = useRef([]);
   const [scrollState, setScrollState] = useState({});
 
+  // compute combined lists: if favorites exist, add one list on top with category "Favorites"
+  const combinedLists = React.useMemo(() => {
+    const arr = [];
+    if (favorites && favorites.length > 0) {
+      arr.push({
+        category: "Favorites",
+        tracks: favorites,
+        _isFavorites: true,
+      });
+    }
+    // clone playlists to avoid mutating originals
+    playlists.forEach((p) => arr.push({ ...p, _isFavorites: false }));
+    return arr;
+  }, [playlists, favorites]);
 
   const scroll = (idx, dir) => {
     const container = scrollRefs.current[idx];
@@ -19,7 +37,6 @@ const MusicCard = () => {
       });
     }
   };
-
 
   const handleScroll = (idx) => {
     const el = scrollRefs.current[idx];
@@ -34,18 +51,34 @@ const MusicCard = () => {
     }
   };
 
- 
   useEffect(() => {
-    playlistData.forEach((_, idx) => handleScroll(idx));
-  }, []);
+    setTimeout(() => {
+      combinedLists.forEach((_, idx) => handleScroll(idx));
+    }, 50);
+  }, [combinedLists.length]);
+
+  const filterTracks = (tracks) => {
+    if (!searchTerm || !searchTerm.trim()) return tracks;
+    const lower = searchTerm.toLowerCase();
+    return tracks.filter(
+      (t) =>
+        (t.title && t.title.toLowerCase().includes(lower)) ||
+        (t.artist && t.artist.toLowerCase().includes(lower))
+    );
+  };
 
   return (
     <>
-      {playlistData.map((list, idx) => {
+      {combinedLists.map((list, idx) => {
         const { isAtStart, isAtEnd } = scrollState[idx] || {};
+        const visibleTracks = filterTracks(list.tracks || []);
+
+        if (searchTerm && searchTerm.trim() && visibleTracks.length === 0) {
+          return null;
+        }
+
         return (
           <section key={idx} className="mb-12 relative">
-
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-[20px] font-semibold text-neut-900">
                 {list.category}
@@ -89,23 +122,39 @@ const MusicCard = () => {
                 ref={(el) => (scrollRefs.current[idx] = el)}
                 onScroll={() => handleScroll(idx)}
                 className=" flex gap-6 overflow-x-auto scroll-smooth no-scrollbar pb-3 transition-all duration-300 "
-                
               >
-                {list.tracks.map((track, i) => (
+                {visibleTracks.map((track, i) => (
                   <div
-                    key={i}
+                    key={track.id ?? `${idx}-${i}`}
                     className="min-w-[260px] bg-white rounded-lg rounded-t-sm shadow-[0_1px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_20px_rgba(0,0,0,0.12)] transition overflow-hidden cursor-pointer"
+                    onClick={() =>
+                      onPlay &&
+                      onPlay(track, {
+                        type: list._isFavorites ? "favorites" : "category",
+                        categoryIdx: list._isFavorites ? null : (playlists.indexOf(playlists.find(p => p.category === list.category))),
+                      })
+                    }
                   >
                     <div className="relative aspect-square">
                       <Image
-                        src={track.thumbnail}
-                        alt={track.category}
+                        src={track.thumbnail || "/placeholder.jpg"}
+                        alt={track.title || track.category}
                         width={300}
                         height={300}
                         className="object-cover w-full h-full"
                       />
 
-                      <button className="group absolute -bottom-5 right-6 bg-white hover:bg-primary-500 shadow-md hover:shadow-lg transition-all duration-300 rounded-full p-3 flex items-center justify-center cursor-pointer">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); 
+                          onPlay &&
+                            onPlay(track, {
+                              type: list._isFavorites ? "favorites" : "category",
+                              categoryIdx: list._isFavorites ? null : (playlists.indexOf(playlists.find(p => p.category === list.category))),
+                            });
+                        }}
+                        className="group absolute -bottom-5 right-6 bg-white hover:bg-primary-500 shadow-md hover:shadow-lg transition-all duration-300 rounded-full p-3 flex items-center justify-center cursor-pointer"
+                      >
                         <FaPlay className="w-4 h-4 text-neut-600 transition-colors duration-300 group-hover:text-white" />
                       </button>
                     </div>
