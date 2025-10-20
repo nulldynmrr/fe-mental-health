@@ -1,57 +1,158 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState, useCallback } from "react";
 import Upper from "./upper";
+import Choices from "./options";
+import request from "@/utils/request";
+import toast from "react-hot-toast";
 
 const Visualize = () => {
-  const summary = [
-    {
-      tanggal: "22/09/2025",
-      cate: "Takut",
-      text: "Kamu hari ini sedang ketakutan, seluruh tubuhmu tegang, setiap gerakanmu tampak ragu, dan matamu yang melebar terus memindai ruangan seolah ada ancaman tersembunyi yang tak terlihat. Kau benar-benar terlihat dikuasai oleh rasa takut, seperti seekor rusa yang terperangkap dalam lampu sorot.",
-    },
+  const [activeTab, setActiveTab] = useState("journal");
+  const [summary, setSummary] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
-    {
-      tanggal: "19/09/2025",
-      cate: "Sedih",
-      text: "Kamu hari ini sedang sedih, seluruh dirimu memancarkan aura kesedihan yang gelap dan pekat. Bahumu terkulai lesu, air matamu mungkin telah mengering, tetapi tatapanmu yang kosong ke kejauhan memperlihatkan betapa dalam dan beratnya beban duka yang sedang kau pikul di hati.",
-    },
+  // const fetchData = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     let url = "";
 
-    {
-      tanggal: "02/09/2025",
-      cate: "Marah",
-      text: "Kamu hari ini sedang marah, rahangmu mengeras, napasmu memburu, dan kilatan tajam di matamu menunjukkan bahwa ada amarah besar yang terpendam, seolah kau sedang berusaha keras menahan letusan kekecewaan dan frustrasi yang siap menghancurkan apa pun di dekatmu.",
-    },
-    {
-      tanggal: "22/08/2025",
-      cate: "Bahagia",
-      text: "Kamu hari ini sedang bahagia sekali, seolah semua beban telah terangkat dari pundakmu. Melihatmu secerah ini benar-benar membuat suasana di sekitar kita ikut terasa positif dan menenangkan.",
-    },
-  ];
+  //     if (activeTab === "journal") {
+  //       url = "/statistic/journal-stats";
+  //     } else {
+  //       url = "/statistic/face-stats";
+  //     }
+
+  //     if (selectedDate) {
+  //       url += `?tgl=${selectedDate}`;
+  //     }
+
+  //     const response = await request.get(url);
+  //     const data = response.data.data?.data;
+  //     setSummary(Array.isArray(data) ? data : data ? [data] : []);
+  //   } catch (err) {
+  //     if (err.response && err.response.status === 404) {
+  //       setSummary([]);
+  //     } else {
+  //       toast.error("Gagal mengambil data statistik");
+  //     }
+  //     console.error("Gagal ambil data:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [activeTab, selectedDate]);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      let url = "";
+
+      const today = new Date().toISOString().split("T")[0]; // format YYYY-MM-DD
+      const dateToUse = selectedDate || today;
+
+      if (activeTab === "journal") {
+        url = `/journal`;
+      } else {
+        url = `/face-detection`;
+      }
+
+      const response = await request.get(url);
+      const data = response.data.data?.data;
+      setSummary(Array.isArray(data) ? data : data ? [data] : []);
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        setSummary([]);
+      } else {
+        toast.error("Gagal mengambil data");
+      }
+      console.error("Gagal ambil data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, selectedDate]);
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab, selectedDate]);
 
   return (
     <>
-      <Upper />
+      <Upper setSelectedDate={setSelectedDate} />
+      <Choices activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="flex flex-col gap-5">
-        {summary.map((item, index) => (
-          <div
-            key={index}
-            className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 shadow-lg hover:shadow-md transition-shadow"
-          >
-            <div className="flex flex-col items-start pl-10 w-1/5">
-              <h2 className="text-2xl font-bold text-primary-500">
-                {item.cate}
-              </h2>
-            </div>
+      <div className="flex flex-col gap-5 mt-6">
+        {loading ? (
+          <p className="text-gray-500 text-center mt-10">Memuat data...</p>
+        ) : activeTab === "journal" ? (
+          summary.length > 0 ? (
+            summary.map((item, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
+              >
+                <div className="flex flex-col items-start pl-10 w-1/5">
+                  <h2 className="text-2xl font-bold text-primary-500">
+                    {item.mood === "joy"
+                      ? "Bahagia"
+                      : item.mood === "sad"
+                      ? "Sedih"
+                      : item.mood === "anger"
+                      ? "Marah"
+                      : item.mood === "fear"
+                      ? "Takut"
+                      : item.mood === "disgust"
+                      ? "Jijik"
+                      : item.mood === "surprise"
+                      ? "Terkejut"
+                      : item.mood || "-"}
+                  </h2>
+                </div>
 
-            <div className="flex-1 text-gray-700 leading-relaxed text-sm">
-              {item.text}
-            </div>
+                <div className="flex-1 text-gray-700 leading-relaxed text-sm">
+                  {item.content || "Tidak ada deskripsi untuk entri ini."}
+                </div>
 
-            <div className="w-1/6 text-right font-bold text-neut-600">
-              {item.tanggal}
+                <div className="w-1/6 text-right font-bold text-neut-600">
+                  {item.createdAt
+                    ? new Date(item.createdAt).toLocaleDateString("id-ID")
+                    : "-"}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center mt-10">
+              Belum ada data Jurnal.
+            </p>
+          )
+        ) : summary.length > 0 ? (
+          summary.map((item, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
+            >
+              <div className="flex flex-col items-start pl-10 w-1/5">
+                <h2 className="text-2xl font-bold text-primary-500">
+                  {item.emotion || "-"}
+                </h2>
+              </div>
+
+              <div className="flex-1 text-gray-700 leading-relaxed text-sm">
+                {item.text ||
+                  item.description ||
+                  "Tidak ada deskripsi untuk entri ini."}
+              </div>
+
+              <div className="w-1/6 text-right font-bold text-neut-600">
+                {item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString("id-ID")
+                  : "-"}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="text-gray-500 text-center mt-10">
+            Belum ada data Face Detection.
+          </p>
+        )}
       </div>
     </>
   );

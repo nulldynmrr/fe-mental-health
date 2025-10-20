@@ -1,10 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Button from "@/components/button/page";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // ✅ tambahkan usePathname
 
 const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname(); // ✅ cek path sekarang
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,6 +31,14 @@ const Navbar = () => {
     }
   };
 
+  const handleSoulSpaceClick = () => {
+    if (pathname !== "/dashboard") {
+      router.push("/dashboard");
+    } else {
+      handleScrollTo("dashboard"); 
+    }
+  };
+
   return (
     <nav
       className={`sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-20 h-16 transition-all duration-300 ${
@@ -41,7 +50,7 @@ const Navbar = () => {
       <div className="flex items-center gap-4 sm:gap-10 lg:gap-20">
         <div
           className="text-xl sm:text-2xl font-semibold cursor-pointer"
-          onClick={() => handleScrollTo("dashboard")}
+          onClick={handleSoulSpaceClick}
         >
           SoulSpace
         </div>
@@ -62,13 +71,12 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* yang ini ya kak */}
       <div className="hidden md:flex">
         {isLoggedIn ? (
           <Button
             text="Keluar"
             variant="logged"
-            // onClick={() => router.push("/dashboard")} ini
+            // onClick={() => router.push("/dashboard")}
           />
         ) : (
           <Button
