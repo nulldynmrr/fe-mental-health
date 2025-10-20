@@ -89,7 +89,11 @@ const Login = () => {
       });
 
       if (response.status === 200 || response.data.code === 201) {
-        Cookies.set("token", response.data.data.access_token);
+        Cookies.set("token", response.data.data.access_token, {
+          expires: rememberMe ? 7 : 1, 
+          sameSite: "Strict",
+        });
+
         toast.dismiss();
         toast.success("Login Berhasil");
 
