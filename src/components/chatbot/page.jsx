@@ -82,7 +82,7 @@ export default function ChatPage() {
       </div>
 
      
-      <div className="border-t border-neut-200 bg-white rounded-b-2xl px-5 py-5">
+      <div className="border-t border-neut-200 rounded-b-2xl px-5 py-5">
         <div className="flex items-center gap-3 border border-neut-100 rounded-lg px-4 py-2">
           <span className="text-xl text-gray-400 cursor-pointer">+</span>
           <input
