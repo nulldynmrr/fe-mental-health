@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Button from "@/components/button/page";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const Navbar = () => {
   const router = useRouter();
@@ -20,6 +21,14 @@ const Navbar = () => {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
+
+    const token = Cookies.get("token");
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -28,6 +37,13 @@ const Navbar = () => {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleLogout = () => {
+    Cookies.remove("token");
+    localStorage.removeItem("rememberMeData");
+    setIsLoggedIn(false);
+    router.push("/login");
   };
 
   return (
@@ -62,14 +78,9 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* yang ini ya kak */}
       <div className="hidden md:flex">
         {isLoggedIn ? (
-          <Button
-            text="Keluar"
-            variant="logged"
-            // onClick={() => router.push("/dashboard")} ini
-          />
+          <Button text="Keluar" variant="logged" onClick={handleLogout} />
         ) : (
           <Button
             text="Masuk"
@@ -132,18 +143,14 @@ const Navbar = () => {
 
           <div className="w-full border-t border-gray-200 pt-3">
             {isLoggedIn ? (
-              <Button
-                text="Dashboard"
-                variant="round"
-                onClick={() => router.push("/dashboard")}
-              />
+              <Button text="Keluar" variant="round" onClick={handleLogout} />
             ) : (
               <Button
                 text="Masuk"
                 variant="round"
                 onClick={() => {
-                  setIsLoggedIn(true);
-                  router.push("/dashboard");
+                  setIsOpen(false);
+                  router.push("/login");
                 }}
               />
             )}

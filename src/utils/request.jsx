@@ -3,24 +3,24 @@ import Cookies from "js-cookie";
 
 const request = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_HOST}/api/v1`,
-  timeout: 60000,
+  // timeout: 60000,
+  timeout: 120000,
   headers: {
-    // 'Content-Type': 'application/json',
-    // 'Content-Type': 'application/json, multipart/form-data',
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "*",
     "Access-Control-Allow-Methods": "*",
     "Access-Control-Allow-Credentials": "true",
   },
 });
-const requestHandler = (request) => {
-  let token = Cookies.get("token");
 
-  if (token !== undefined) {
-    request.headers.Authorization = `Bearer ${token}`;
+const requestHandler = (req) => {
+  const token = Cookies.get("token");
+
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
   }
 
-  return request;
+  return req;
 };
 
 const responseHandler = (response) => {
@@ -28,35 +28,41 @@ const responseHandler = (response) => {
 };
 
 const expiredTokenHandler = () => {
-  // store.dispatch(getLoginData({}))
-  localStorage.clear();
-  Cookies.remove("token");
-  window.location.href = "/login";
-  // return error;
+  try {
+    localStorage.clear();
+    Cookies.remove("token");
+    window.location.href = "/login";
+  } catch (err) {
+    console.error("Error handling expired token:", err);
+  }
 };
 
 const errorHandler = (error) => {
-  if (error.response && error.response.status === 401) {
-    expiredTokenHandler();
-  } else if (error.code === "ERR_NETWORK") {
-    window.history.pushState({}, "Redirect Network Error", "/login");
-    console.log(error);
-    if (error.response?.status === 401) {
+  try {
+    if (error.response && error.response.status === 401) {
       expiredTokenHandler();
+    } else if (error.code === "ERR_NETWORK") {
+      console.warn("Network error:", error.message);
+      window.history.pushState({}, "Redirect Network Error", "/login");
+      if (error.response?.status === 401) {
+        expiredTokenHandler();
+      }
     }
+  } catch (err) {
+    console.error("Error in request errorHandler:", err);
   }
 
-  // Tambahkan ini agar error bisa tertangkap di .catch()
+  // biar tetap bisa .catch()
   return Promise.reject(error);
 };
 
 request.interceptors.request.use(
-  (request) => requestHandler(request),
+  (req) => requestHandler(req),
   (error) => errorHandler(error)
 );
 
 request.interceptors.response.use(
-  (response) => responseHandler(response),
+  (res) => responseHandler(res),
   (error) => errorHandler(error)
 );
 
@@ -66,8 +72,9 @@ export default {
     request({ method: "get", url, params, headers }),
   post: (url, data, headers = {}) =>
     request({ method: "post", url, data, headers }),
-  put: (url, data, headers) => request({ method: "put", url, data, headers }),
-  patch: (url, data, headers) =>
+  put: (url, data, headers = {}) =>
+    request({ method: "put", url, data, headers }),
+  patch: (url, data, headers = {}) =>
     request({ method: "patch", url, data, headers }),
   delete: (url, data) => request({ method: "delete", url, data }),
   setToken: (token) => {
