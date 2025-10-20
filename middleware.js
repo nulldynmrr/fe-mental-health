@@ -11,14 +11,12 @@ const protectedRoutes = [
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get("token");
+  const token = request.cookies.get("token")?.value;
 
-  // Pastikan hanya match jika route diawali oleh path yang dilindungi
   const isProtected = protectedRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Kalau butuh login dan token tidak ada
   if (isProtected && !token) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("from", pathname);
@@ -29,10 +27,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: [
-    /*
-      Ini memastikan middleware tidak kena untuk file static, API, atau Next internals.
-    */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|login|register).*)"],
 };

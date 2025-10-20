@@ -3,8 +3,7 @@ import Cookies from "js-cookie";
 
 const request = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_HOST}/api/v1`,
-  // timeout: 60000,
-  timeout: 120000,
+  timeout: 60000,
   headers: {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "*",

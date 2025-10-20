@@ -57,10 +57,8 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-20 h-16 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
-          : "bg-transparent"
+      className={`bg-white sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-20 h-16 transition-all duration-300 ${
+        isScrolled ? "shadow-[0_4px_12px_rgba(0,0,0,0.06)]" : ""
       }`}
     >
       <div className="flex items-center gap-4 sm:gap-10 lg:gap-20">

@@ -1,0 +1,179 @@
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { LuLock } from "react-icons/lu";
+import InputField from "@/components/field/page";
+import Button from "@/components/button/page";
+import request from "@/utils/request";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
+import { z } from "zod";
+
+const regisSchema = z
+  .object({
+    first_name: z.string().min(1, "Nama Depan wajib diisi"),
+    last_name: z.string().min(1, "Nama Belakang wajib diisi"),
+    email: z
+      .string()
+      .email("Format email tidak valid")
+      .min(1, "Email wajib diisi"),
+    phone_number: z
+      .string()
+      .regex(
+        /^\+628\d{8,}$/,
+        "Nomor telepon harus diawali dengan +628 dan memiliki minimal 11 digit."
+      )
+      .min(1, "Nomor telepon wajib diisi"),
+    password: z
+      .string()
+      .regex(
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
+        "Password harus mengandung minimal 1 huruf kapital dan 1 karakter spesial"
+      )
+      .min(8, "Password minimal 8 karakter")
+      .min(1, "Password wajib diisi"),
+  })
+  .passthrough();
+
+const newPassword = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const validations = regisSchema.safeParse(formData);
+
+    if (!validations.success) {
+      const newErrors = {};
+      validations.error.issues.forEach((err) => {
+        newErrors[err.path[0]] = err.message;
+      });
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await request.post("/auth/reset-password", formData, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.status === 200 || response.data.code === 201) {
+        Cookies.set("token", response.data.data.access_token);
+        toast.dismiss();
+        localStorage.setItem("email", formData.email);
+        toast.success("Password Baru Berhasil dibuat");
+        return;
+      }
+    } catch (err) {
+      toast.dismiss();
+      const errorMessage =
+        err.response?.data?.errors?.validation?.email?.[0] ||
+        err.response?.data?.errors?.message ||
+        err.response?.data?.message ||
+        "Email sudah digunakan.";
+
+      if (errorMessage.includes("Email already taken")) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "Email sudah digunakan.",
+        }));
+      } else {
+        toast.error(errorMessage);
+      }
+
+      setErrors((prev) => ({
+        ...prev,
+        password: "",
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen">
+      <div className="hidden md:flex w-1/2 bg-primary-50 justify-center items-center">
+        <Image
+          src="/assets/regis.svg"
+          alt="newPassword Illustration"
+          width={400}
+          height={400}
+          priority
+        />
+      </div>
+
+      <div className="flex flex-col w-full md:w-1/2 px-6 md:px-12">
+        <div className="flex flex-1 items-center justify-center w-full">
+          <div className="w-full max-w-md space-y-6">
+            <h2 className="text-3xl font-bold text-black">Password Baru</h2>
+            <p className="text-neut-600 text-sm font-semibold">
+              Atur kata sandi baru untuk akun Anda agar dapat login dan
+              mengakses semua fitur.
+            </p>
+
+            <form onSubmit={onSubmit} noValidate className="space-y-4">
+              <div className="flex flex-col space-y-4">
+                <InputField
+                  label="Masukkan Password baru"
+                  name="password"
+                  type="password"
+                  placeholder="Masukkan password"
+                  value={formData.password}
+                  onChange={onChange}
+                  message={errors.password}
+                  icon={LuLock}
+                />
+
+                <InputField
+                  label="Konfirmasi Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Masukkan password"
+                  value={formData.confirmPassword}
+                  onChange={onChange}
+                  message={errors.confirmPassword}
+                  icon={LuLock}
+                />
+              </div>
+
+              <Button variant="primary" text="Update Password" fullWidth />
+            </form>
+            <div className="w-full self-end text-center text-sm mt-6">
+              <span className="text-neut-500 font-medium">
+                Sudah Punya Akun?{" "}
+              </span>
+              <a
+                href="/login"
+                className="text-primary-500 hover:underline font-medium"
+              >
+                Masuk
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default newPassword;

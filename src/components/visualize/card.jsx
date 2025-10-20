@@ -11,36 +11,6 @@ const Visualize = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // const fetchData = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     let url = "";
-
-  //     if (activeTab === "journal") {
-  //       url = "/statistic/journal-stats";
-  //     } else {
-  //       url = "/statistic/face-stats";
-  //     }
-
-  //     if (selectedDate) {
-  //       url += `?tgl=${selectedDate}`;
-  //     }
-
-  //     const response = await request.get(url);
-  //     const data = response.data.data?.data;
-  //     setSummary(Array.isArray(data) ? data : data ? [data] : []);
-  //   } catch (err) {
-  //     if (err.response && err.response.status === 404) {
-  //       setSummary([]);
-  //     } else {
-  //       toast.error("Gagal mengambil data statistik");
-  //     }
-  //     console.error("Gagal ambil data:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [activeTab, selectedDate]);
-
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -131,7 +101,19 @@ const Visualize = () => {
             >
               <div className="flex flex-col items-start pl-10 w-1/5">
                 <h2 className="text-2xl font-bold text-primary-500">
-                  {item.emotion || "-"}
+                  {item.mood === "joy"
+                    ? "Bahagia"
+                    : item.mood === "sad"
+                    ? "Sedih"
+                    : item.mood === "anger"
+                    ? "Marah"
+                    : item.mood === "fear"
+                    ? "Takut"
+                    : item.mood === "disgust"
+                    ? "Jijik"
+                    : item.mood === "surprise"
+                    ? "Terkejut"
+                    : item.mood || "-"}
                 </h2>
               </div>
 

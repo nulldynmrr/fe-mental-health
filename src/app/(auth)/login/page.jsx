@@ -90,7 +90,7 @@ const Login = () => {
 
       if (response.status === 200 || response.data.code === 201) {
         Cookies.set("token", response.data.data.access_token, {
-          expires: rememberMe ? 7 : 1, 
+          expires: rememberMe ? 7 : 1,
           sameSite: "Strict",
         });
 
@@ -109,8 +109,21 @@ const Login = () => {
     } catch (error) {
       setLoading(false);
       toast.dismiss();
-      toast.error(error.response.data.message);
-      setErrors({ email: "", password: "" });
+
+      const message =
+        error?.response?.data?.message ||
+        "Terjadi kesalahan, silakan coba lagi";
+
+      toast.error(message);
+
+      if (message.toLowerCase().includes("username")) {
+        setErrors({ email: message, password: "" });
+      } else if (message.toLowerCase().includes("password")) {
+        setErrors({ email: "", password: message });
+      } else {
+        setErrors({ email: "", password: "" });
+      }
+
       return;
     }
   };
