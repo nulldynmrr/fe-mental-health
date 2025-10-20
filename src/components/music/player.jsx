@@ -2,12 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
-  FaPlay,
-  FaPause,
-  FaStepBackward,
-  FaStepForward,
-  FaRandom,
-  FaRedoAlt,
+  FaPlay, FaPause, FaStepBackward, FaStepForward, FaRandom, FaRedoAlt,
   FaChromecast,
   FaChevronUp,
   FaHeart,
@@ -79,7 +74,6 @@ const Player = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#1e1e1e] text-white flex items-center justify-between px-6 py-3 z-50 shadow-lg">
-      {/* Bagian kiri */}
       <div className="flex items-center gap-4 w-1/3">
         <Image
           src={currentTrack?.thumbnail || "/assets/thumbnails/rel-classical.svg"}
@@ -114,13 +108,11 @@ const Player = ({
         </div>
       </div>
 
-      {/* Bagian tengah */}
       <div className="flex flex-col items-center w-1/3">
         <div className="flex items-center gap-7 mb-2">
           <FaRandom className="cursor-pointer text-gray-300 hover:text-white" />
           <FaStepBackward onClick={onPrev} className="cursor-pointer text-gray-300 hover:text-white" />
 
-          {/* Tombol Play/Pause */}
           <button
             onClick={onTogglePlay}
             className="bg-white text-black p-2 rounded-full hover:scale-105 transition"

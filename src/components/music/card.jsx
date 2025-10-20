@@ -4,16 +4,15 @@ import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { FaPlay } from "react-icons/fa6";
 
-// props:
-// playlists: Array of category lists (format as in your utils/playlist)
-// favorites: Array of track objects saved by user
-// searchTerm: string
-// onPlay: function(track, context) where context = { type: 'category'|'favorites', categoryIdx }
-const MusicCard = ({ playlists = [], favorites = [], searchTerm = "", onPlay }) => {
+const MusicCard = ({
+  playlists = [],
+  favorites = [],
+  searchTerm = "",
+  onPlay,
+}) => {
   const scrollRefs = useRef([]);
   const [scrollState, setScrollState] = useState({});
 
-  // compute combined lists: if favorites exist, add one list on top with category "Favorites"
   const combinedLists = React.useMemo(() => {
     const arr = [];
     if (favorites && favorites.length > 0) {
@@ -23,7 +22,7 @@ const MusicCard = ({ playlists = [], favorites = [], searchTerm = "", onPlay }) 
         _isFavorites: true,
       });
     }
-    // clone playlists to avoid mutating originals
+
     playlists.forEach((p) => arr.push({ ...p, _isFavorites: false }));
     return arr;
   }, [playlists, favorites]);
@@ -126,12 +125,18 @@ const MusicCard = ({ playlists = [], favorites = [], searchTerm = "", onPlay }) 
                 {visibleTracks.map((track, i) => (
                   <div
                     key={track.id ?? `${idx}-${i}`}
-                    className="min-w-[260px] bg-white rounded-lg rounded-t-sm shadow-[0_1px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_20px_rgba(0,0,0,0.12)] transition overflow-hidden cursor-pointer"
+                    className="min-w-[260px] max-w-[260px] flex-shrink-0 bg-white rounded-lg rounded-t-sm shadow-[0_1px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_20px_rgba(0,0,0,0.12)] transition overflow-hidden cursor-pointer"
                     onClick={() =>
                       onPlay &&
                       onPlay(track, {
                         type: list._isFavorites ? "favorites" : "category",
-                        categoryIdx: list._isFavorites ? null : (playlists.indexOf(playlists.find(p => p.category === list.category))),
+                        categoryIdx: list._isFavorites
+                          ? null
+                          : playlists.indexOf(
+                              playlists.find(
+                                (p) => p.category === list.category
+                              )
+                            ),
                       })
                     }
                   >
@@ -146,11 +151,19 @@ const MusicCard = ({ playlists = [], favorites = [], searchTerm = "", onPlay }) 
 
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); 
+                          e.stopPropagation();
                           onPlay &&
                             onPlay(track, {
-                              type: list._isFavorites ? "favorites" : "category",
-                              categoryIdx: list._isFavorites ? null : (playlists.indexOf(playlists.find(p => p.category === list.category))),
+                              type: list._isFavorites
+                                ? "favorites"
+                                : "category",
+                              categoryIdx: list._isFavorites
+                                ? null
+                                : playlists.indexOf(
+                                    playlists.find(
+                                      (p) => p.category === list.category
+                                    )
+                                  ),
                             });
                         }}
                         className="group absolute -bottom-5 right-6 bg-white hover:bg-primary-500 shadow-md hover:shadow-lg transition-all duration-300 rounded-full p-3 flex items-center justify-center cursor-pointer"
