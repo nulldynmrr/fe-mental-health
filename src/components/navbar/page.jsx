@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Button from "@/components/button/page";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 const Navbar = () => {
   const router = useRouter();
-  const pathname = usePathname(); // ✅ cek path sekarang
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -45,6 +45,14 @@ const Navbar = () => {
     localStorage.removeItem("rememberMeData");
     setIsLoggedIn(false);
     router.push("/login");
+  };
+
+  const handleSoulSpaceClick = () => {
+    if (pathname !== "/dashboard") {
+      router.push("/dashboard");
+    } else {
+      handleScrollTo("dashboard");
+    }
   };
 
   return (
