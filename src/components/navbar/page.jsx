@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 
 const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname(); // ✅ cek path sekarang
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -57,7 +58,7 @@ const Navbar = () => {
       <div className="flex items-center gap-4 sm:gap-10 lg:gap-20">
         <div
           className="text-xl sm:text-2xl font-semibold cursor-pointer"
-          onClick={() => handleScrollTo("dashboard")}
+          onClick={handleSoulSpaceClick}
         >
           SoulSpace
         </div>

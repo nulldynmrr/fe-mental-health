@@ -1,30 +1,91 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaThumbsUp } from "react-icons/fa6";
 import { HiThumbDown } from "react-icons/hi";
 
 const ChatBot = ({ text, time }) => {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-lg">
-        🤖
-      </div>
+  const [copyState, setCopyState] = useState("idle"); 
+  const [feedback, setFeedback] = useState(null); 
 
-      <div>
-        <div className="bg-neut-50 rounded-xl pb-10 p-4 max-w-[70%] text-[15px] leading-relaxed">
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyState("success");
+      setTimeout(() => setCopyState("done"), 2000);
+    } catch (err) {
+      console.error("Gagal menyalin teks:", err);
+    }
+  };
+
+  const renderButtonText = () => {
+    switch (copyState) {
+      case "success":
+        return "✓ Berhasil disalin";
+      case "done":
+        return "Sudah disalin";
+      default:
+        return "Salin";
+    }
+  };
+
+  const handleLike = () => {
+    setFeedback((prev) => (prev === "like" ? null : "like"));
+  };
+
+  const handleDislike = () => {
+    setFeedback((prev) => (prev === "dislike" ? null : "dislike"));
+  };
+
+  return (
+    <div className="relative flex flex-col items-start my-10">
+      <div className="relative max-w-[80%]">
+        <div className="bg-neut-50 rounded-2xl p-4 pb-10 text-[15px] leading-relaxed shadow-sm border border-neut-100 relative">
           {text}
+
+          <div className="absolute left-4 bottom-0 translate-y-1/2">
+            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-xl shadow-md border-2 border-white">
+              🤖
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 justify-end">
+        <div className="absolute right-0 -bottom-8 flex items-center gap-3 text-xs text-neut-500">
           <span className="cursor-default">{time}</span>
-          <span className="hover:text-primary-500 cursor-pointer text-neut-600 bg-neut-50 w-10 h-5 flex justify-center items-center rounded-lg font-semibold">Salin</span>
-          <span className="hover:text-primary-500 cursor-pointer text-neut-600 bg-neut-50 w-30 h-5 flex justify-center items-center rounded-lg font-semibold">Membuat jawaban</span>
-          <div className="text-white bg-neut-50 flex gap-2 w-10 items-center justify-center h-5 rounded-lg">
-          <button className="hover:text-primary-500 text-neut-600">
-            <FaThumbsUp />
+
+          <button
+            onClick={handleCopy}
+            className={`bg-neut-50 rounded-lg px-2 py-1 font-medium transition-all duration-300 ${
+              copyState === "success"
+                ? "text-primary-500"
+                : copyState === "done"
+                ? "text-gray-400"
+                : "text-neut-600 hover:text-primary-500 hover:underline"
+            }`}
+          >
+            {renderButtonText()}
           </button>
-          <button className="hover:text-red-500 text-neut-600">
-            <HiThumbDown />
-          </button>
+
+          <div className="flex bg-neut-50 rounded-lg p-1 items-center gap-2 transition-all">
+            <button
+              onClick={handleLike}
+              className={`transition-colors ${
+                feedback === "like"
+                  ? "text-primary-500"
+                  : "text-neut-600 hover:text-primary-500"
+              }`}
+            >
+              <FaThumbsUp size={14} />
+            </button>
+
+            <button
+              onClick={handleDislike}
+              className={`transition-colors ${
+                feedback === "dislike"
+                  ? "text-red-500"
+                  : "text-neut-600 hover:text-red-500"
+              }`}
+            >
+              <HiThumbDown size={16} />
+            </button>
           </div>
         </div>
       </div>

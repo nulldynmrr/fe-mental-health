@@ -1,82 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import request from "@/utils/request";
+import Cookies from "js-cookie";
 
 const VideoCards = () => {
-  const videos = [
-    {
-      date: "10 Juli 2025",
-      title: "Tips Menjaga Kesehatan Mental",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/tips.svg",
-    },
-    {
-      date: "10 Juni 2025",
-      title: "Apa itu Mental Health",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/mental-health.svg",
-    },
-    {
-      date: "20 April 2024",
-      title: "Pentingnya Menjaga Kesehatan Mental untuk Hidup",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/importance.svg",
-    },
-    {
-      date: "10 September 2024",
-      title: "Apa itu Mental Health",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/gangguan.svg",
-    },
-    {
-      date: "10 Juli 2025",
-      title: "Tips Menjaga Kesehatan Mental",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/tips.svg",
-    },
-    {
-      date: "10 Juni 2025",
-      title: "Apa itu Mental Health",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/mental-health.svg",
-    },
-    {
-      date: "20 April 2024",
-      title: "Pentingnya Menjaga Kesehatan Mental untuk Hidup",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/importance.svg",
-    },
-    {
-      date: "10 September 2024",
-      title: "Apa itu Mental Health",
-      description:
-        "Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan platform profesional secara maksimal. Mat...",
-      thumbnail: "assets/thumbnails/gangguan.svg",
-    },
-  ];
-
-  const VideoCards = () => {
-    const [expanded, setExpanded] = useState(false);
-    const displayedVideos = expanded ? videos : videos.slice(0, 4);
-
-    return (
-      <div>
-        {displayedVideos.map((video, idx) => (
-          <div key={idx}>{video.title}</div>
-        ))}
-      </div>
-    );
-  };
+  const [videos, setVideos] = useState([]);
   const [expanded, setExpanded] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+  const fetchVideos = async () => {
+    try {
+      const token = Cookies.get("token"); 
+      const res = await fetch("https://mental-health-be.xianly.cloud/api/v1/video?page=2", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log("✅ Response:", data);
+    } catch (err) {
+      console.error("❌ Fetch gagal:", err);
+    }
+  };
+
+  fetchVideos();
+  }, []);
+
+
+
   const displayedVideos = expanded ? videos : videos.slice(0, 4);
+
+  if (loading) {
+    return (
+      <section className="max-w-7xl mx-auto px-2 py-5 text-center">
+        <p className="text-gray-500">Memuat video...</p>
+      </section>
+    );
+  }
+
+  if (videos.length === 0) {
+    return (
+      <section className="max-w-7xl mx-auto px-2 py-5 text-center">
+        <p className="text-gray-500">Tidak ada video ditemukan.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="max-w-7xl mx-auto px-2 py-5">
@@ -93,7 +64,7 @@ const VideoCards = () => {
             lg:flex-[1_1_calc(25%-1.25rem)]
             h-auto
             max-w-[400px] mx-auto
-  "
+          "
           >
             {/* Thumbnail */}
             <div className="relative aspect-[16/9] cursor-pointer">

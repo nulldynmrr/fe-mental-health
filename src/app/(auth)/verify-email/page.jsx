@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Button from "@/components/button/page";
 import Navbar from "@/components/navbar/page";
-import request from "@/utils/request";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
