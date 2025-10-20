@@ -6,7 +6,6 @@ import Navbar from "@/components/navbar/page";
 import Breadcrumb from "@/components/breadcrumb/page";
 import { AiOutlinePaperClip } from "react-icons/ai";
 import { RiCloseLargeFill } from "react-icons/ri";
-import { FaTimes } from "react-icons/fa";
 import request from "@/utils/request";
 import toast from "react-hot-toast";
 
@@ -17,40 +16,37 @@ const AddJournal = () => {
   const [files, setFiles] = useState([]);
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
-  const [review, setReview] = useState("");
-  const [displayedText, setDisplayedText] = useState("");
+  const [review, setReview] = useState(null);
   const reviewRef = useRef(null);
 
   const wordCount = journalText.trim().split(/\s+/).filter(Boolean).length;
 
   const onSubmitJournal = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
 
     try {
+      const title = subject.trim() || "Untitled";
       const form = new FormData();
-      const title =
-        formData.title.trim() || journalText.slice(0, 20) || "Untitled";
 
+      const userId = localStorage.getItem("userId");
+      if (userId) form.append("userId", userId);
+
+      form.append("title", title);
+      form.append("content", journalText);
       files.forEach((file) => form.append("files", file));
 
-      const response = await request.post(
-        "/journal",
-        {
-          title,
-          content: journalText,
-        },
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await request.post("/journal", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       if (response.status === 201 || response.data.code === 201) {
         toast.success("Journal berhasil dibuat");
         setFormData({ title: "" });
         setJournalText("");
         setFiles([]);
-        setReview("");
+        setReview(null);
         router.push("/smartJournaling");
       } else {
         toast.error("Gagal membuat jurnal");
@@ -74,28 +70,55 @@ const AddJournal = () => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onAnalyze = async () => {
-    if (wordCount <= 50 && !subject.trim()) return;
+  const onAnalyze = async (e) => {
+    e.preventDefault();
+    if (loading) return;
     setLoading(true);
+
     try {
-      const response = await new Promise((resolve) =>
-        setTimeout(
-          () =>
-            resolve(
-              "✨ Analisis AI: Jurnal kamu cukup bagus, coba tambahkan detail pada kesimpulan."
-            ),
-          2000
-        )
-      );
-      setReview(response);
+      const title = subject.trim() || "Untitled";
+      const form = new FormData();
+
+      const userId = localStorage.getItem("userId");
+      if (userId) form.append("userId", userId);
+
+      form.append("title", title);
+      form.append("content", journalText);
+      files.forEach((file) => form.append("files", file));
+
+      const postResponse = await request.post("/journal", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (postResponse.status === 201 || postResponse.data.code === 201) {
+        toast.success("Journal berhasil dibuat untuk analisis");
+
+        const journalId = postResponse.data.data.journal_id;
+        const getResponse = await request.get(`/journal/${journalId}`);
+
+        if (getResponse.status === 200 && getResponse.data.code === 200) {
+          const journalData = getResponse.data.data;
+          setReview({
+            mood: journalData.mood,
+            confidence: journalData.confidence || 90,
+          });
+        } else {
+          toast.error("Gagal mengambil hasil analisis");
+        }
+      } else {
+        toast.error("Gagal menganalisis jurnal");
+      }
     } catch (error) {
       console.error("Error analyzing journal:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Terjadi kesalahan saat menganalisis jurnal"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // otomatis scroll
   useEffect(() => {
     if (review && reviewRef.current) {
       const timeout = setTimeout(() => {
@@ -105,21 +128,6 @@ const AddJournal = () => {
         });
       }, 100);
       return () => clearTimeout(timeout);
-    }
-  }, [review]);
-
-  // animation text
-  useEffect(() => {
-    if (review) {
-      setDisplayedText("");
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < review.length) {
-          setDisplayedText((prev) => prev + review[index]);
-          index++;
-        } else clearInterval(interval);
-      }, 20);
-      return () => clearInterval(interval);
     }
   }, [review]);
 
@@ -182,6 +190,7 @@ const AddJournal = () => {
                       type="button"
                       onClick={() => onRemoveFile(index)}
                       className="text-neut-400 hover:text-red-500"
+                      disabled={loading}
                     >
                       <RiCloseLargeFill />
                     </button>
@@ -198,6 +207,7 @@ const AddJournal = () => {
                   className="hidden"
                   multiple
                   onChange={onFileChange}
+                  disabled={loading}
                 />
               </label>
             </div>
@@ -206,34 +216,47 @@ const AddJournal = () => {
           <div className="bg-neut-100 px-4 py-3 flex gap-3">
             <Button
               text={loading ? "Menganalisis..." : "Analisis Jurnal"}
-              variant={wordCount > 50 ? "primary" : "disabled"}
-              onClick={wordCount > 50 ? onAnalyze : undefined}
+              variant={wordCount > 2 ? "primary" : "disabled"}
+              onClick={wordCount > 2 ? onAnalyze : undefined}
               loading={loading}
+              disabled={loading}
             />
-            <Button text="Simpan Jurnal" variant="secondary" type="submit" />
+            <Button
+              text={loading ? "Menyimpan..." : "Simpan Jurnal"}
+              variant="secondary"
+              type="submit"
+              loading={loading}
+              disabled={loading}
+            />
           </div>
         </form>
 
         {review && (
-          <div
-            ref={reviewRef}
-            className="flex items-center justify-center mt-6"
-          >
-            <div className="w-full bg-white border border-neut-100 rounded-lg">
-              <div className="flex items-center justify-end bg-primary-500 text-white p-4 rounded-t-lg rounded-b-none">
-                <button
-                  type="button"
-                  onClick={() => setReview("")}
-                  className="hover:text-neut-200 transition-colors"
-                >
-                  <FaTimes size={16} />
-                </button>
-              </div>
-              <div className="border-b border-neut-100 mt-6 mx-6" />
-              <div className="p-6 text-sm text-black leading-relaxed">
-                <h2 className="text-xl font-medium mb-2">Hasil Analisis</h2>
-                <div className="space-y-4">{displayedText}</div>
-              </div>
+          <div ref={reviewRef} className="mt-10">
+            <h2 className="text-xl font-semibold mb-4">Hasil Analisis</h2>
+            <div className="w-full bg-primary-50 border border-primary-100 rounded-lg p-6 text-center">
+              <h3 className="text-lg font-semibold text-black mb-2">
+                Hasil Emosi:
+              </h3>
+              <p className="text-4xl font-bold text-primary-500 mb-2 capitalize">
+                {review?.mood === "joy"
+                  ? "Bahagia"
+                  : review?.mood === "sadness"
+                  ? "Sedih"
+                  : review?.mood === "anger"
+                  ? "Marah"
+                  : review?.mood === "fear"
+                  ? "Takut"
+                  : review?.mood === "disgust"
+                  ? "Jijik"
+                  : review?.mood === "surprise"
+                  ? "Terkejut"
+                  : review?.mood || "-"}
+              </p>
+              <p className="text-md text-black">
+                Confident :{" "}
+                {review?.confidence ? review.confidence.toFixed(0) : 90}
+              </p>
             </div>
           </div>
         )}
