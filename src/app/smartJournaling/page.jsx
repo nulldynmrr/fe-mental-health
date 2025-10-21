@@ -15,13 +15,13 @@ const SmartJournaling = () => {
   const router = useRouter();
   const [fetchJournal, setFetchJournal] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedIds, setSelectedIds] = useState([]); // ubah ke array
+  const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectMode, setSelectMode] = useState(false); // mode pilih aktif atau tidak
+  const [selectMode, setSelectMode] = useState(false);
 
   const toggleSelectMode = () => {
     setSelectMode((prev) => !prev);
-    if (selectMode) setSelectedIds([]); // reset jika keluar mode pilih
+    if (selectMode) setSelectedIds([]);
   };
 
   const onSelectedJournal = (id) => {
@@ -53,11 +53,14 @@ const SmartJournaling = () => {
     setLoading(true);
     try {
       const response = await request.get("/journal");
-      const data = response.data.data.data;
+      const data = response.data.data?.data;
 
-      // 🔧 Perbaikan utama: hanya ambil jurnal milik user yang sedang login
       const userId = parseInt(localStorage.getItem("userId"));
       const userJournal = Array.isArray(data)
+        ? data
+        : data
+        ? [data]
+        : []
         ? data.filter((j) => j.userId === userId)
         : [];
 
@@ -76,8 +79,6 @@ const SmartJournaling = () => {
   useEffect(() => {
     fetchAllJournal();
   }, [fetchAllJournal]);
-
-  console.log("fetchJournal:", fetchJournal);
 
   return (
     <div>
