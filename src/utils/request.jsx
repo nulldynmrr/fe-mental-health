@@ -78,6 +78,3 @@ export default {
     }
   },
 };
-
-// tambahan dari key
-request.defaults.headers.common.Authorization = `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzYwODk5MzI4LCJleHAiOjE3NjA5ODU3Mjh9.LfITK2BBv0V6DXPhAkCohjD48bKy9iyTSHR0k5ObjX0`;
