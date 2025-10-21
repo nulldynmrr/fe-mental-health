@@ -48,6 +48,13 @@ const VideoCards = () => {
     fetchVideos();
   }, [fetchVideos]);
 
+  function getYouTubeId(url) {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  }
+
   const displayedVideos = expanded ? videos : videos.slice(0, 4);
 
   if (loading) {
@@ -67,8 +74,8 @@ const VideoCards = () => {
   }
 
   return (
-    <section className="max-w-7xl mx-auto px-2 py-5">
-      <div className="flex flex-wrap gap-5 justify-center">
+    <section className="mx-auto px-2 py-5">
+      <div className="flex flex-wrap gap-4 justify-center">
         {displayedVideos.map((video, idx) => (
           <div
             key={idx}
@@ -85,7 +92,9 @@ const VideoCards = () => {
           >
             <div className="relative aspect-[16/9] cursor-pointer">
               <img
-                src={video.videoUrl}
+                src={`https://img.youtube.com/vi/${getYouTubeId(
+                  video.videoUrl
+                )}/hqdefault.jpg`}
                 alt={video.title}
                 className="w-full h-full"
               />
