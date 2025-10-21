@@ -13,17 +13,15 @@ export default function ChatPage() {
   const [replyTo, setReplyTo] = useState(null);
   const chatEndRef = useRef(null);
   const [showMenu, setShowMenu] = useState(false);
-
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -53,6 +51,7 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setReplyTo(null);
+    setIsGenerating(true);
 
     setTimeout(() => {
       const botMsg = {
@@ -65,6 +64,7 @@ export default function ChatPage() {
         }),
       };
       setMessages((prev) => [...prev, botMsg]);
+      setIsGenerating(false);
     }, 1200);
   };
 
@@ -84,7 +84,6 @@ export default function ChatPage() {
     setReplyTo({ text });
   };
 
-  
   const handleDeleteChat = () => {
     if (window.confirm("Apakah kamu yakin ingin menghapus semua percakapan?")) {
       setMessages([]);
@@ -120,7 +119,6 @@ export default function ChatPage() {
         )}
       </div>
 
-
       <div className="flex flex-col flex-1 bg-white p-6 overflow-y-auto gap-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-neut-400">
@@ -154,8 +152,8 @@ export default function ChatPage() {
       {replyTo && (
         <div className="px-5 pb-2 text-sm text-neut-600 flex justify-between items-center">
           <div className="truncate max-w-[85%]">
-            <span className="text-primary-600 font-medium">Membalas:</span>{" "}
-            “{replyTo.text}”
+            <span className="text-primary-600 font-medium">Membalas:</span> “
+            {replyTo.text}”
           </div>
           <button
             onClick={() => setReplyTo(null)}
@@ -178,17 +176,27 @@ export default function ChatPage() {
           <input
             type="text"
             placeholder={
-              editingId ? "Edit pesanmu..." : "Tanyakan sesuatu di sini..."
+              isGenerating
+                ? "Tunggu sebentar..."
+                : editingId
+                ? "Edit pesanmu..."
+                : "Tanyakan sesuatu di sini..."
             }
             className="flex-1 outline-none border-none text-[15px] placeholder-neut-300"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            disabled={isGenerating}
           />
 
           <button
             onClick={handleSend}
-            className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 transition"
+            className={`bg-primary-500 text-white p-2 rounded-lg transition ${
+              isGenerating
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-primary-600"
+            }`}
+            disabled={isGenerating}
           >
             <FaArrowUp className="text-sm" />
           </button>
