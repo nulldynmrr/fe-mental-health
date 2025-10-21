@@ -190,7 +190,10 @@ const Login = () => {
                   />
                   <span className="text-neut-400">Ingat Saya</span>
                 </label>
-                <a href="#" className="text-primary-500 hover:underline">
+                <a
+                  href="/forget-password"
+                  className="text-primary-500 hover:underline"
+                >
                   Lupa Password?
                 </a>
               </div>

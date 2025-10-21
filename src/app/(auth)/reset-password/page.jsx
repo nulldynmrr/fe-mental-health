@@ -7,24 +7,10 @@ import InputField from "@/components/field/page";
 import Button from "@/components/button/page";
 import request from "@/utils/request";
 import toast from "react-hot-toast";
-import Cookies from "js-cookie";
 import { z } from "zod";
 
 const regisSchema = z
   .object({
-    first_name: z.string().min(1, "Nama Depan wajib diisi"),
-    last_name: z.string().min(1, "Nama Belakang wajib diisi"),
-    email: z
-      .string()
-      .email("Format email tidak valid")
-      .min(1, "Email wajib diisi"),
-    phone_number: z
-      .string()
-      .regex(
-        /^\+628\d{8,}$/,
-        "Nomor telepon harus diawali dengan +628 dan memiliki minimal 11 digit."
-      )
-      .min(1, "Nomor telepon wajib diisi"),
     password: z
       .string()
       .regex(
@@ -33,6 +19,11 @@ const regisSchema = z
       )
       .min(8, "Password minimal 8 karakter")
       .min(1, "Password wajib diisi"),
+    confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Konfirmasi password tidak cocok",
+    path: ["confirmPassword"],
   })
   .passthrough();
 
@@ -78,32 +69,23 @@ const newPassword = () => {
       });
 
       if (response.status === 200 || response.data.code === 201) {
-        Cookies.set("token", response.data.data.access_token);
         toast.dismiss();
-        localStorage.setItem("email", formData.email);
-        toast.success("Password Baru Berhasil dibuat");
+        toast.success("Password baru berhasil dibuat");
         return;
       }
     } catch (err) {
       toast.dismiss();
       const errorMessage =
-        err.response?.data?.errors?.validation?.email?.[0] ||
         err.response?.data?.errors?.message ||
         err.response?.data?.message ||
-        "Email sudah digunakan.";
+        "Terjadi kesalahan saat memperbarui password.";
 
-      if (errorMessage.includes("Email already taken")) {
-        setErrors((prev) => ({
-          ...prev,
-          email: "Email sudah digunakan.",
-        }));
-      } else {
-        toast.error(errorMessage);
-      }
+      toast.error(errorMessage);
 
       setErrors((prev) => ({
         ...prev,
         password: "",
+        confirmPassword: "",
       }));
     } finally {
       setLoading(false);

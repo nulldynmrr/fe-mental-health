@@ -1,35 +1,52 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import request from "@/utils/request";
-import Cookies from "js-cookie";
+import { formatWaktu } from "@/utils/time";
+import toast from "react-hot-toast";
 
 const VideoCards = () => {
   const [videos, setVideos] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-  const fetchVideos = async () => {
+  const fetchVideos = useCallback(async () => {
+    setLoading(true);
     try {
-      const token = Cookies.get("token"); 
-      const res = await fetch("https://mental-health-be.xianly.cloud/api/v1/video?page=2", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const res = await request.get("/video?page=2");
+      const rawData = res.data?.data;
 
-      const data = await res.json();
-      console.log("✅ Response:", data);
+      const list = Array.isArray(rawData)
+        ? rawData
+        : rawData?.data && Array.isArray(rawData.data)
+        ? rawData.data
+        : [];
+
+      const mapped = list.map((item) => ({
+        id: item.video_id,
+        title: item.title,
+        description: item.description,
+        date: formatWaktu(item.createdAt),
+        videoUrl: item.videoUrl?.startsWith("http")
+          ? item.videoUrl
+          : `${process.env.NEXT_PUBLIC_API_URL}${item.videoUrl}`,
+      }));
+
+      setVideos(mapped);
     } catch (err) {
-      console.error("❌ Fetch gagal:", err);
+      if (err.response?.status === 404) {
+        setVideos([]);
+      } else {
+        console.error("Gagal ambil data video:", err);
+        toast.error("Gagal mengambil data video");
+      }
+    } finally {
+      setLoading(false);
     }
-  };
-
-  fetchVideos();
   }, []);
 
-
+  useEffect(() => {
+    fetchVideos();
+  }, [fetchVideos]);
 
   const displayedVideos = expanded ? videos : videos.slice(0, 4);
 
@@ -66,10 +83,9 @@ const VideoCards = () => {
             max-w-[400px] mx-auto
           "
           >
-            {/* Thumbnail */}
             <div className="relative aspect-[16/9] cursor-pointer">
               <img
-                src={video.thumbnail}
+                src={video.videoUrl}
                 alt={video.title}
                 className="w-full h-full"
               />
@@ -81,8 +97,6 @@ const VideoCards = () => {
                 />
               </button>
             </div>
-
-            {/* Content */}
             <div className="p-3 py-5">
               <div className="flex items-center text-gray-500 text-sm mb-2 gap-2">
                 <img
@@ -98,8 +112,6 @@ const VideoCards = () => {
           </div>
         ))}
       </div>
-
-      {/* Button */}
       <div className="flex justify-end items-end mt-10">
         <button
           onClick={() => setExpanded(!expanded)}
