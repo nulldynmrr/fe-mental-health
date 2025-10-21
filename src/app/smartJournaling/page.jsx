@@ -15,26 +15,37 @@ const SmartJournaling = () => {
   const router = useRouter();
   const [fetchJournal, setFetchJournal] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
 
-  const onSelectedJournal = (id) => {
-    setSelectedId(id);
-    setOpenModal(true);
+  const toggleSelectMode = () => {
+    setSelectMode((prev) => !prev);
+    if (selectMode) setSelectedIds([]);
   };
 
-  const onDeleteJournal = async (id = selectedId) => {
-    try {
-      await request.delete(`/journal/${id}`);
-      toast.success("Jurnal berhasil dihapus");
+  const onSelectedJournal = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
-      setFetchJournal((prev) => prev.filter((j) => j.journal_id !== id));
+  const onDeleteJournal = async () => {
+    try {
+      await Promise.all(
+        selectedIds.map((id) => request.delete(`/journal/${id}`))
+      );
+      toast.success("Jurnal berhasil dihapus");
+      setFetchJournal((prev) =>
+        prev.filter((j) => !selectedIds.includes(j.journal_id))
+      );
       fetchAllJournal();
     } catch (err) {
       toast.error("Jurnal gagal dihapus");
     } finally {
       setOpenModal(false);
-      setSelectedId(null);
+      setSelectedIds([]);
+      setSelectMode(false);
     }
   };
 
@@ -42,8 +53,18 @@ const SmartJournaling = () => {
     setLoading(true);
     try {
       const response = await request.get("/journal");
-      const data = response.data.data.data;
-      setFetchJournal(Array.isArray(data) ? data : data ? [data] : []);
+      const data = response.data.data?.data;
+
+      const userId = parseInt(localStorage.getItem("userId"));
+      const userJournal = Array.isArray(data)
+        ? data
+        : data
+        ? [data]
+        : []
+        ? data.filter((j) => j.userId === userId)
+        : [];
+
+      setFetchJournal(userJournal);
     } catch (err) {
       if (err.response && err.response.status == 404) {
         setFetchJournal([]);
@@ -59,8 +80,6 @@ const SmartJournaling = () => {
     fetchAllJournal();
   }, [fetchAllJournal]);
 
-  console.log("fetchJournal:", fetchJournal);
-
   return (
     <div>
       <Navbar />
@@ -72,9 +91,25 @@ const SmartJournaling = () => {
           ]}
         />
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold mb-6">Jurnal Pintar</h1>
-          <HiOutlineDotsVertical className="text-neut-950 font-6xl" />
+          <h1 className="text-2xl font-semibold">Jurnal Pintar</h1>
+
+          <div className="flex flex-row items-center gap-4">
+            {selectMode && selectedIds.length > 0 && (
+              <button
+                onClick={() => setOpenModal(true)}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+              >
+                Hapus yang Dipilih
+              </button>
+            )}
+
+            <HiOutlineDotsVertical
+              className="text-neut-950 text-2xl cursor-pointer"
+              onClick={toggleSelectMode}
+            />
+          </div>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 min-h-[280px]">
           <AddJournalCard
             onClick={() => router.push("/smartJournaling/addJournal")}
@@ -86,8 +121,9 @@ const SmartJournaling = () => {
                 title={journal.title}
                 description={journal.content}
                 date={formatWaktu(journal.updatedAt, "date")}
-                selected={selectedId === journal.journal_id}
+                selected={selectedIds.includes(journal.journal_id)}
                 onSelect={() => onSelectedJournal(journal.journal_id)}
+                selectMode={selectMode}
               />
             ))
           ) : (
@@ -100,7 +136,7 @@ const SmartJournaling = () => {
       <Modal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        onConfirm={() => onDeleteJournal(selectedId)}
+        onConfirm={onDeleteJournal}
         title="Apakah Anda yakin ingin menghapus jurnal ini?"
         description="Jurnal ini akan dihapus secara permanen dan tidak dapat dipulihkan."
       />

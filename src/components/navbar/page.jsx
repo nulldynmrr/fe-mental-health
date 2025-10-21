@@ -1,11 +1,12 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Button from "@/components/button/page";
-import { useRouter, usePathname } from "next/navigation"; // ✅ tambahkan usePathname
+import Cookies from "js-cookie";
 
 const Navbar = () => {
   const router = useRouter();
-  const pathname = usePathname(); // ✅ cek path sekarang
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,6 +22,14 @@ const Navbar = () => {
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
+
+    const token = Cookies.get("token");
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -31,20 +40,25 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    Cookies.remove("token");
+    localStorage.removeItem("rememberMeData");
+    setIsLoggedIn(false);
+    router.push("/login");
+  };
+
   const handleSoulSpaceClick = () => {
     if (pathname !== "/dashboard") {
       router.push("/dashboard");
     } else {
-      handleScrollTo("dashboard"); 
+      handleScrollTo("dashboard");
     }
   };
 
   return (
     <nav
-      className={`sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-20 h-16 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
-          : "bg-transparent"
+      className={`bg-white sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-20 h-16 transition-all duration-300 ${
+        isScrolled ? "shadow-[0_4px_12px_rgba(0,0,0,0.06)]" : ""
       }`}
     >
       <div className="flex items-center gap-4 sm:gap-10 lg:gap-20">
@@ -73,11 +87,7 @@ const Navbar = () => {
 
       <div className="hidden md:flex">
         {isLoggedIn ? (
-          <Button
-            text="Keluar"
-            variant="logged"
-            // onClick={() => router.push("/dashboard")}
-          />
+          <Button text="Keluar" variant="logged" onClick={handleLogout} />
         ) : (
           <Button
             text="Masuk"
@@ -140,18 +150,14 @@ const Navbar = () => {
 
           <div className="w-full border-t border-gray-200 pt-3">
             {isLoggedIn ? (
-              <Button
-                text="Dashboard"
-                variant="round"
-                onClick={() => router.push("/dashboard")}
-              />
+              <Button text="Keluar" variant="round" onClick={handleLogout} />
             ) : (
               <Button
                 text="Masuk"
                 variant="round"
                 onClick={() => {
-                  setIsLoggedIn(true);
-                  router.push("/dashboard");
+                  setIsOpen(false);
+                  router.push("/login");
                 }}
               />
             )}
