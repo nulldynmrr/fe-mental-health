@@ -89,7 +89,11 @@ const Login = () => {
       });
 
       if (response.status === 200 || response.data.code === 201) {
-        Cookies.set("token", response.data.data.access_token);
+        Cookies.set("token", response.data.data.access_token, {
+          expires: rememberMe ? 7 : 1,
+          sameSite: "Strict",
+        });
+
         toast.dismiss();
         toast.success("Login Berhasil");
 
@@ -105,8 +109,21 @@ const Login = () => {
     } catch (error) {
       setLoading(false);
       toast.dismiss();
-      toast.error(error.response.data.message);
-      setErrors({ email: "", password: "" });
+
+      const message =
+        error?.response?.data?.message ||
+        "Terjadi kesalahan, silakan coba lagi";
+
+      toast.error(message);
+
+      if (message.toLowerCase().includes("username")) {
+        setErrors({ email: message, password: "" });
+      } else if (message.toLowerCase().includes("password")) {
+        setErrors({ email: "", password: message });
+      } else {
+        setErrors({ email: "", password: "" });
+      }
+
       return;
     }
   };
@@ -173,7 +190,10 @@ const Login = () => {
                   />
                   <span className="text-neut-400">Ingat Saya</span>
                 </label>
-                <a href="#" className="text-primary-500 hover:underline">
+                <a
+                  href="/forget-password"
+                  className="text-primary-500 hover:underline"
+                >
                   Lupa Password?
                 </a>
               </div>

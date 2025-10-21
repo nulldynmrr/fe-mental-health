@@ -1,47 +1,60 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Button from "../button/page";
 import Image from "next/image";
 import request from "@/utils/request";
+import { formatWaktu } from "@/utils/time";
+import toast from "react-hot-toast";
 
 const NewsCard = () => {
   const [articles, setArticles] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await request.get("/mindful-news?page=2");
-        const raw = res.data?.data;
-        const list = Array.isArray(raw) ? raw : raw?.data || [];
+  const fetchMindfulNews = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await request.get("/mindful-news?page=2");
+      const rawData = res.data?.data;
 
-        const mapped = list.map((item) => ({
-          id: item.news_id,
-          title: item.title,
-          description: item.description,
-          date: new Date(item.createdAt).toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          }),
-          thumbnail: item.imageUrl || "/assets/thumbnails/default.svg",
-          profile: "/assets/icons/profile.svg",
-          role: "Administrator",
-          jobdesk: "Copywriter",
-          readingTime: "2 menit baca",
-        }));
+      const list = Array.isArray(rawData)
+        ? rawData
+        : rawData?.data && Array.isArray(rawData.data)
+        ? rawData.data
+        : [];
 
-        setArticles(mapped);
-      } catch (err) {
+      const mapped = list.map((item) => ({
+        id: item.news_id,
+        title: item.title,
+        description: item.description,
+        date: formatWaktu(item.createdAt),
+        imageUrl: item.imageUrl?.startsWith("http")
+          ? item.imageUrl
+          : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`,
+        readingTime: item.readingTime,
+        role: item.role || "Administrator",
+        jobdesk: item.jobdesk || "Copywriter",
+        thumbnail: item.thumbnailUrl?.startsWith("http")
+          ? item.thumbnailUrl
+          : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+      }));
+
+      setArticles(mapped);
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setArticles([]);
+      } else {
         console.error("Gagal ambil data berita:", err);
-      } finally {
-        setLoading(false);
+        toast.error("Gagal mengambil data berita");
       }
-    };
-
-    fetchNews();
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchMindfulNews();
+  }, [fetchMindfulNews]);
 
   if (loading) return <p>Loading...</p>;
   if (!articles.length) return <p>Belum ada berita tersedia.</p>;
@@ -57,13 +70,14 @@ const NewsCard = () => {
             style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.5)" }}
             className="bg-white rounded-xl overflow-hidden border border-gray-200 pt-4 flex flex-col h-full"
           >
-        
             <div className="w-full px-4">
               <div className="relative w-full aspect-[16/9] overflow-hidden rounded-md bg-gray-100">
-                <img
-                  src={article.thumbnail}
+                <Image
+                  src={article.imageUrl}
                   alt={article.title}
-                  className="absolute inset-0 w-full h-full object-cover object-center"
+                  fill
+                  className="object-cover object-center"
+                  unoptimized
                 />
               </div>
             </div>
@@ -72,7 +86,7 @@ const NewsCard = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center text-gray-500 text-sm gap-2">
                   <img
-                    src="/assets/icons/calendar.svg"
+                    src={"/assets/icons/calendar.svg"}
                     alt="calendar"
                     className="w-4 h-4"
                   />
@@ -91,11 +105,13 @@ const NewsCard = () => {
               <div className="mt-auto">
                 <div className="flex flex-row gap-3 mt-4">
                   <Image
-                    src={article.profile}
+                    src={article.imageUrl}
                     alt="Profile"
                     width={40}
                     height={40}
                     priority
+                    unoptimized
+                    className="rounded-full object-cover"
                   />
                   <div className="flex flex-col items-start justify-center">
                     <div className="text-sm font-semibold text-neut-900 text-left">
@@ -109,7 +125,7 @@ const NewsCard = () => {
 
                 <div className="mt-3 pt-3 border-t border-neut-200 flex items-center justify-between">
                   <span className="text-gray-500 text-sm font-semibold">
-                    {article.readingTime}
+                    {article.readingTime} Menit Baca
                   </span>
                   <Button text="Baca Selengkapnya" variant="primary" />
                 </div>
