@@ -127,18 +127,16 @@ const forgetPassword = () => {
               <Button variant="primary" text="Lanjutkan" fullWidth />
             </form>
 
-            <div className="flex flex-row w-full md:w-1/2 px-6 md:px-12">
-              <div className="w-full max-w-md self-end text-center text-sm mt-6">
-                <span className="text-neut-500 font-medium">
-                  Sudah Punya Akun?{" "}
-                </span>
-                <a
-                  href="/login"
-                  className="text-primary-500 hover:underline font-medium"
-                >
-                  Masuk
-                </a>
-              </div>
+            <div className="w-full max-w-md self-end text-center text-sm mt-6">
+              <span className="text-neut-500 font-medium">
+                Sudah Punya Akun?{" "}
+              </span>
+              <a
+                href="/login"
+                className="text-primary-500 hover:underline font-medium"
+              >
+                Masuk
+              </a>
             </div>
           </div>
         </div>
