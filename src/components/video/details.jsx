@@ -1,23 +1,71 @@
 "use client";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import request from "@/utils/request";
 
-const NewsPage = () => {
+const VideoPage = () => {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const videoId = searchParams.get("id");
+
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setLoading(true);
+        const [page1, page2] = await Promise.all([
+          request.get("/video?page=1"),
+          request.get("/video?page=2"),
+        ]);
+
+        const allVideos = [
+          ...(page1?.data?.data || []),
+          ...(page2?.data?.data || []),
+        ];
+
+        setVideos(allVideos);
+      } catch (error) {
+        console.error("Error fetching videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <p className="text-gray-600 text-lg">Loading videos...</p>
+      </div>
+    );
+
+  if (videos.length === 0)
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <p className="text-gray-600 text-lg">Belum ada video tersedia.</p>
+      </div>
+    );
+
+  const mainVideo =
+    videos.find((v) => v.video_id === Number(videoId)) || videos[0];
+  const otherVideos = videos.filter((v) => v.video_id !== mainVideo.video_id);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-    
+    <div className="max-w-7xl mx-auto py-8">
       <div className="w-full aspect-video rounded-xl overflow-hidden mb-6">
-        <video
+        <iframe
+          src={mainVideo.videoUrl}
+          title={mainVideo.title}
           className="w-full h-full object-cover"
-          controls
-          poster="/assets/images/tips-mental-health-thumbnail.png"
-        >
-          <source src="/assets/videos/tips-mental-health.mp4" type="video/mp4" />
-          Browser kamu tidak mendukung video tag.
-        </video>
+          allowFullScreen
+        />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-semibold mb-3">
-        Tips Menjaga Kesehatan Mental
+      <h1 className="text-xl md:text-2xl text-left font-semibold mb-3">
+        {mainVideo.title}
       </h1>
 
       <div className="flex items-center gap-3 mb-6">
@@ -34,18 +82,36 @@ const NewsPage = () => {
         </div>
       </div>
 
-      <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-        Dalam sesi ini, kami akan membahas berbagai cara untuk memanfaatkan
-        platform profesional secara maksimal. Materi ini mencakup strategi
-        untuk menjaga kesehatan mental, keseimbangan antara kehidupan pribadi
-        dan pekerjaan, serta tips praktis agar tetap produktif dan bahagia.
+      <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-8">
+        {mainVideo.description}
       </p>
 
-      <button className="mt-4 text-blue-600 font-medium hover:underline">
-        ...more
-      </button>
+      <h2 className="text-xl font-semibold mb-4">Video Lainnya</h2>
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {otherVideos.map((video) => (
+          <div
+            key={video.video_id}
+            className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
+          >
+            <iframe
+              src={video.videoUrl}
+              title={video.title}
+              className="w-full aspect-video"
+              allowFullScreen
+            />
+            <div className="p-3">
+              <h3 className="font-medium text-gray-800 line-clamp-2">
+                {video.title}
+              </h3>
+              <p className="text-sm text-gray-500 line-clamp-2">
+                {video.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
-export default NewsPage;
+export default VideoPage;

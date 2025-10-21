@@ -19,19 +19,23 @@ const Detail = () => {
         />
       </div>
 
-      <div className="flex items-center gap-3 mb-6">
-        <Image
-          src="/assets/icons/profile.svg"
-          alt="Administrator"
-          width={40}
-          height={40}
-          className="rounded-full w-10 h-10 sm:w-12 sm:h-12"
-        />
-        <div>
-          <p className="font-medium text-gray-800 text-sm sm:text-base">
-            Administrator
-          </p>
-          <p className="text-xs sm:text-sm text-gray-500">Senin, 10 Juli 2024</p>
+      <div className="mt-auto">
+        <div className="flex flex-row gap-3 mt-4">
+          <Image
+            src="/assets/icons/profile.svg"
+            alt="Profile"
+            width={40}
+            height={40}
+            priority
+          />
+          <div className="flex flex-col items-start justify-center">
+            <div className="text-sm font-semibold text-neut-900 text-left">
+              {/* {article.role} */}
+            </div>
+            <div className="text-sm font-semilight text-neut-600 text-left">
+              {/* {article.jobdesk} */}
+            </div>
+          </div>
         </div>
       </div>
 
