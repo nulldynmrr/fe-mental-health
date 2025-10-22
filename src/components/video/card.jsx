@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import request from "@/utils/request";
 import { formatWaktu } from "@/utils/time";
-import toast from "react-hot-toast";
 
 const VideoCards = () => {
   const [videos, setVideos] = useState([]);
