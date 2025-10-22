@@ -19,9 +19,11 @@ const Vids = () => {
 
       {/* <VideoPage /> */}
       <br />
-      <h1 className="text-2xl font-semibold font-stretch-75% p-6">Video Lainnya</h1>
+      <h1 className="text-2xl font-semibold font-stretch-75% p-6">
+        Video Lainnya
+      </h1>
       <div className="px-10">
-        <VideoCards/>
+        <VideoCards />
       </div>
     </div>
   );
