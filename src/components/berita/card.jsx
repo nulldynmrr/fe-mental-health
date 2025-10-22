@@ -30,13 +30,13 @@ const NewsCard = () => {
         date: formatWaktu(item.createdAt),
         imageUrl: item.imageUrl?.startsWith("http")
           ? item.imageUrl
-          : `${process.env.NEXT_PUBLIC_API_URL}${item.imageUrl}`,
+          : `${process.env.NEXT_PUBLIC_HOST}${item.imageUrl}`,
         readingTime: item.readingTime,
         role: item.role || "Administrator",
         jobdesk: item.jobdesk || "Copywriter",
         thumbnail: item.thumbnailUrl?.startsWith("http")
           ? item.thumbnailUrl
-          : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+          : `${process.env.NEXT_PUBLIC_HOST}${item.thumbnailUrl}`,
       }));
 
       setArticles(mapped);
@@ -51,6 +51,8 @@ const NewsCard = () => {
       setLoading(false);
     }
   }, []);
+
+  
 
   useEffect(() => {
     fetchMindfulNews();

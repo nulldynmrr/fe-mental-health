@@ -28,7 +28,7 @@ const VideoCards = () => {
         date: formatWaktu(item.createdAt),
         videoUrl: item.videoUrl?.startsWith("http")
           ? item.videoUrl
-          : `${process.env.NEXT_PUBLIC_API_URL}${item.videoUrl}`,
+          : `${process.env.NEXT_PUBLIC_HOST}${item.videoUrl}`,
       }));
 
       setVideos(mapped);
