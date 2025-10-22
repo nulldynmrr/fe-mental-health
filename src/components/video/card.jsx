@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import request from "@/utils/request";
 import { formatWaktu } from "@/utils/time";
-import toast from "react-hot-toast";
 
 const VideoCards = () => {
   const [videos, setVideos] = useState([]);
@@ -37,7 +36,6 @@ const VideoCards = () => {
         setVideos([]);
       } else {
         console.error("Gagal ambil data video:", err);
-        toast.error("Gagal mengambil data video");
       }
     } finally {
       setLoading(false);
