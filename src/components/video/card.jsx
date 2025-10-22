@@ -37,7 +37,6 @@ const VideoCards = () => {
         setVideos([]);
       } else {
         console.error("Gagal ambil data video:", err);
-        toast.error("Gagal mengambil data video");
       }
     } finally {
       setLoading(false);

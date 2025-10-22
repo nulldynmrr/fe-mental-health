@@ -45,7 +45,6 @@ const NewsCard = () => {
         setArticles([]);
       } else {
         console.error("Gagal ambil data berita:", err);
-        toast.error("Gagal mengambil data berita");
       }
     } finally {
       setLoading(false);
