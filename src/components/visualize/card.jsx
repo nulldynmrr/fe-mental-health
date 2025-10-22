@@ -59,7 +59,7 @@ const Visualize = () => {
                 key={index}
                 className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
               >
-                <div className="flex flex-col items-start pl-10 w-1/5">
+                <div className="flex flex-row md:flex-col items-start pl-10 w-1/5">
                   <h2 className="text-2xl font-bold text-primary-500">
                     {item.mood === "joy"
                       ? "Bahagia"

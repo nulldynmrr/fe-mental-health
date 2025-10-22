@@ -5,16 +5,19 @@ import Breadcrumb from "@/components/breadcrumb/page";
 import FaceScanner from "@/components/face-scanner/page";
 import request from "@/utils/request";
 import toast from "react-hot-toast";
+import VideoSection from "@/components/video/page";
 
 const FaceDetection = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const resultRef = useRef(null);
+
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
   const [result, setResult] = useState(null);
 
+  // === Open Camera ===
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -28,10 +31,11 @@ const FaceDetection = () => {
         }
       } catch (err) {
         console.error("Gagal mengakses kamera:", err);
+        toast.error("Tidak dapat mengakses kamera.");
       }
     };
-    startCamera();
 
+    startCamera();
     return () => {
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
@@ -42,14 +46,22 @@ const FaceDetection = () => {
   const getResult = async (id) => {
     try {
       const res = await request.get(`/face-detection/${id}`);
+      console.log("Response getResult:", res);
+
       if (res.status === 200 && res.data?.data) {
-        setResult(res.data.data);
+        const data = res.data.data;
+        setResult({
+          mood: data.mood || data.faceDetect?.mood,
+          confidence: data.confident || data.faceDetect?.confident,
+          imageUrl: data.faceDetect?.imageUrl,
+          detection_id: data.faceDetect?.detection_id || id,
+        });
       } else {
-        console.warn("Data hasil belum siap:", res.data);
+        toast.error("Data hasil belum siap, coba ulangi.");
       }
     } catch (err) {
       console.error("Gagal mengambil hasil analisis:", err);
-      toast.error("Tidak dapat mengambil hasil dari server. Coba ulangi lagi.");
+      toast.error("Tidak dapat mengambil hasil dari server.");
     } finally {
       setIsLoadingResult(false);
     }
@@ -70,6 +82,7 @@ const FaceDetection = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       if (!video || !canvas) return;
+
       const ctx = canvas.getContext("2d");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -82,42 +95,54 @@ const FaceDetection = () => {
       formData.append("image", blob, "capture.jpg");
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, 60000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      try {
-        const saveRes = await request.post(`/face-detection`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-          signal: controller.signal,
+      const saveRes = await request.post(`/face-detection`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      console.log("Response dari server:", saveRes.data);
+
+      if (saveRes.status === 201 || saveRes.data.code === 201) {
+        const data =
+          Array.isArray(saveRes.data.data) && saveRes.data.data.length > 0
+            ? saveRes.data.data[0]
+            : saveRes.data.data;
+
+        const faceID =
+          data?.faceDetect?.detection_id ||
+          data?.detection_id ||
+          saveRes.data?.detection_id;
+
+        console.log("Face ID yang dikirim ke getResult:", faceID);
+
+        setResult({
+          mood: data?.mood || data?.faceDetect?.mood || "-",
+          confidence:
+            typeof data?.confident === "number"
+              ? data.confident
+              : data?.faceDetect?.confident || 0,
+          imageUrl: data?.faceDetect?.imageUrl,
+          detection_id: faceID,
         });
-
-        clearTimeout(timeoutId);
-
-        if (saveRes.status === 201 || saveRes.data.code === 201) {
-          const faceID = saveRes.data.data.detection_id;
-          await getResult(faceID);
-        } else {
-          toast.error("Gagal menganalisis wajah, silakan coba ulang.");
-        }
-      } catch (err) {
-        if (err.name === "AbortError") {
-          toast.error("Silakan capture ulang wajah Anda.");
-        } else {
-          console.error("Error saat analisis wajah:", err);
-          toast.error("Gagal memproses data.");
-        }
-        setIsLoadingResult(false);
+      } else {
+        toast.error("Gagal menganalisis wajah.");
       }
     } catch (err) {
-      console.error("Error saat capture:", err);
-      toast.error("Terjadi kesalahan saat capture. Silakan coba lagi.");
+      if (err.name === "AbortError") {
+        toast.error("Proses terlalu lama. Silakan capture ulang.");
+      } else {
+        console.error("Error saat analisis wajah:", err);
+        toast.error("Terjadi kesalahan saat memproses data.");
+      }
     } finally {
       setIsCapturing(false);
+      setIsLoadingResult(false);
     }
   };
 
-  // scroll otomatis
   useEffect(() => {
     if (resultRef.current) {
       resultRef.current.scrollIntoView({ behavior: "smooth" });
@@ -177,20 +202,32 @@ const FaceDetection = () => {
               Hasil Emosi:
             </h3>
             <p className="text-4xl font-bold text-primary-500 mb-2 capitalize">
-              {result?.mood === "joy"
-                ? "Bahagia"
-                : result?.mood === "sadness"
-                ? "Sedih"
-                : result?.mood === "anger"
-                ? "Marah"
-                : result?.mood === "fear"
-                ? "Takut"
-                : result?.mood === "disgust"
-                ? "Jijik"
-                : result?.mood === "surprise"
-                ? "Terkejut"
-                : result?.mood || "-"}
+              {result?.mood
+                ? result.mood === "joy"
+                  ? "Bahagia"
+                  : result.mood === "sadness"
+                  ? "Sedih"
+                  : result.mood === "anger"
+                  ? "Marah"
+                  : result.mood === "fear"
+                  ? "Takut"
+                  : result.mood === "disgust"
+                  ? "Jijik"
+                  : result.mood === "surprise"
+                  ? "Terkejut"
+                  : result.mood
+                : "-"}
             </p>
+            <p className="text-md text-black">
+              Confidence :{" "}
+              {typeof result?.confidence === "number"
+                ? `${result.confidence.toFixed(2)}%`
+                : "Tidak Ditemukan"}
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <VideoSection />
           </div>
         </div>
       )}

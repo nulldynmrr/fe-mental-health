@@ -93,15 +93,23 @@ const AddJournal = () => {
       if (postResponse.status === 201 || postResponse.data.code === 201) {
         toast.success("Journal berhasil dibuat untuk analisis");
 
-        const journalId = postResponse.data.data.journal_id;
+        const journalId = postResponse.data.data?.journal_id;
         const getResponse = await request.get(`/journal/${journalId}`);
 
         if (getResponse.status === 200 && getResponse.data.code === 200) {
           const journalData = getResponse.data.data;
-          setReview({
-            mood: journalData.mood,
-            confidence: journalData.confidence || 90,
-          });
+
+          // ✅ Pastikan mood & confidence tetap terbaca
+          const mood =
+            journalData?.mood && journalData.mood !== "undefined"
+              ? journalData.mood
+              : "unknown";
+          const confidence =
+            typeof journalData?.confidence === "number"
+              ? journalData.confidence
+              : 90;
+
+          setReview({ mood, confidence });
         } else {
           toast.error("Gagal mengambil hasil analisis");
         }
@@ -234,28 +242,32 @@ const AddJournal = () => {
         {review && (
           <div ref={reviewRef} className="mt-10">
             <h2 className="text-xl font-semibold mb-4">Hasil Analisis</h2>
-            <div className="w-full bg-primary-50 border border-primary-100 rounded-lg p-6 text-center">
+            <div className="w-full bg-primary-50 border border-neut-100 rounded-lg p-6 text-center">
               <h3 className="text-lg font-semibold text-black mb-2">
                 Hasil Emosi:
               </h3>
               <p className="text-4xl font-bold text-primary-500 mb-2 capitalize">
-                {review?.mood === "joy"
-                  ? "Bahagia"
-                  : review?.mood === "sadness"
-                  ? "Sedih"
-                  : review?.mood === "anger"
-                  ? "Marah"
-                  : review?.mood === "fear"
-                  ? "Takut"
-                  : review?.mood === "disgust"
-                  ? "Jijik"
-                  : review?.mood === "surprise"
-                  ? "Terkejut"
-                  : review?.mood || "-"}
+                {review?.mood
+                  ? review.mood === "joy"
+                    ? "Bahagia"
+                    : review.mood === "sadness"
+                    ? "Sedih"
+                    : review.mood === "anger"
+                    ? "Marah"
+                    : review.mood === "fear"
+                    ? "Takut"
+                    : review.mood === "disgust"
+                    ? "Jijik"
+                    : review.mood === "surprise"
+                    ? "Terkejut"
+                    : "Tidak Terdeksi"
+                  : "Tidak Terdeksi"}
               </p>
               <p className="text-md text-black">
-                Confident :{" "}
-                {review?.confidence ? review.confidence.toFixed(0) : 90}
+                Confidence :{" "}
+                {typeof review?.confidence === "number"
+                  ? `${review.confidence.toFixed(2)}%`
+                  : "Tidak Ditemukan"}
               </p>
             </div>
           </div>
