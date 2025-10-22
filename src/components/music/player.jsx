@@ -1,13 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  FaPlay, FaPause, FaStepBackward, FaStepForward, FaRandom, FaRedoAlt,
-  FaChromecast,
-  FaChevronUp,
-  FaHeart,
-  FaEllipsisH,
-} from "react-icons/fa";
+import {FaPlay, FaPause, FaStepBackward, FaStepForward, FaRandom, FaRedoAlt, FaChromecast, FaChevronUp, FaHeart, FaEllipsisH,} from "react-icons/fa";
 import { FaBars, FaRepeat, FaVolumeHigh } from "react-icons/fa6";
 
 const Player = ({
