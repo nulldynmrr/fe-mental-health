@@ -4,7 +4,6 @@ import Button from "../button/page";
 import Image from "next/image";
 import request from "@/utils/request";
 import { formatWaktu } from "@/utils/time";
-import toast from "react-hot-toast";
 
 const NewsCard = () => {
   const [articles, setArticles] = useState([]);
