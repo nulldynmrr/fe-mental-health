@@ -23,7 +23,7 @@ const Upper = ({ setSelectedDate }) => {
       <div className="pr-4 relative">
         <FaCalendar
           onClick={handleIconClick}
-          className="text-neut-600 w-6 h-6 cursor-pointer hover:text-primary-500 transition"
+          className="text-neut-600 w-6 h-6 cursor-pointer mr-32 hover:text-primary-500 transition"
         />
         <input
           ref={inputRef}
