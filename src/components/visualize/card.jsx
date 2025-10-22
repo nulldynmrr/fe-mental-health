@@ -10,24 +10,28 @@ const Visualize = () => {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
+  
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let url = "";
+      let url = activeTab === "journal" ? "/journal" : "/face-detection";
+      const response = await request.get(url);
+      let data = response.data?.data;
 
-      const today = new Date().toISOString().split("T")[0]; // format YYYY-MM-DD
-      const dateToUse = selectedDate || today;
+      let dataArray = Array.isArray(data) ? data : data ? [data] : [];
 
-      if (activeTab === "journal") {
-        url = `/journal`;
-      } else {
-        url = `/face-detection`;
+
+      if (selectedDate) {
+        const dateString = new Date(selectedDate).toISOString().split("T")[0];
+        dataArray = dataArray.filter((item) => {
+          const created = new Date(item.createdAt).toISOString().split("T")[0];
+          return created === dateString;
+        });
       }
 
-      const response = await request.get(url);
-      const data = response.data.data?.data;
-      setSummary(Array.isArray(data) ? data : data ? [data] : []);
+      setSummary(dataArray);
     } catch (err) {
       if (err.response && err.response.status === 404) {
         setSummary([]);
@@ -44,6 +48,21 @@ const Visualize = () => {
     fetchData();
   }, [activeTab, selectedDate]);
 
+  const fetchDetailById = async (id) => {
+    try {
+      const url =
+        activeTab === "journal"
+          ? `/journal/${id}`
+          : `/face-detection/${id}`;
+
+      const response = await request.get(url);
+      setSelectedItem(response.data?.data);
+    } catch (err) {
+      console.error("Gagal ambil detail:", err);
+      toast.error("Gagal mengambil data detail.");
+    }
+  };
+
   return (
     <>
       <Upper setSelectedDate={setSelectedDate} />
@@ -52,90 +71,51 @@ const Visualize = () => {
       <div className="flex flex-col gap-5 mt-6">
         {loading ? (
           <p className="text-gray-500 text-center mt-10">Memuat data...</p>
-        ) : activeTab === "journal" ? (
-          summary.length > 0 ? (
-            summary.map((item, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
-              >
-                <div className="flex flex-col items-start pl-10 w-1/5">
-                  <h2 className="text-2xl font-bold text-primary-500">
-                    {item.mood === "joy"
-                      ? "Bahagia"
-                      : item.mood === "sad"
-                      ? "Sedih"
-                      : item.mood === "anger"
-                      ? "Marah"
-                      : item.mood === "fear"
-                      ? "Takut"
-                      : item.mood === "disgust"
-                      ? "Jijik"
-                      : item.mood === "surprise"
-                      ? "Terkejut"
-                      : item.mood || "-"}
-                  </h2>
-                </div>
-
-                <div className="flex-1 text-gray-700 leading-relaxed text-sm">
-                  {item.content || "Tidak ada deskripsi untuk entri ini."}
-                </div>
-
-                <div className="w-1/6 text-right font-bold text-neut-600">
-                  {item.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString("id-ID")
-                    : "-"}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 text-center mt-10">
-              Belum ada data Jurnal.
-            </p>
-          )
         ) : summary.length > 0 ? (
           summary.map((item, index) => (
             <div
               key={index}
-              className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
+              onClick={() => fetchDetailById(item.id)} 
+              className="cursor-pointer flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col items-start pl-10 w-1/5">
                 <h2 className="text-2xl font-bold text-primary-500">
-                  {item.mood === "joy"
-                    ? "Bahagia"
-                    : item.mood === "sad"
-                    ? "Sedih"
-                    : item.mood === "anger"
-                    ? "Marah"
-                    : item.mood === "fear"
-                    ? "Takut"
-                    : item.mood === "disgust"
-                    ? "Jijik"
-                    : item.mood === "surprise"
-                    ? "Terkejut"
-                    : item.mood || "-"}
+                  {item.mood || "-"}
                 </h2>
               </div>
-
               <div className="flex-1 text-gray-700 leading-relaxed text-sm">
-                {item.text ||
-                  item.description ||
-                  "Tidak ada deskripsi untuk entri ini."}
+                {item.content || item.description || "Tidak ada deskripsi."}
               </div>
-
               <div className="w-1/6 text-right font-bold text-neut-600">
-                {item.createdAt
-                  ? new Date(item.createdAt).toLocaleDateString("id-ID")
-                  : "-"}
+                {new Date(item.createdAt).toLocaleDateString("id-ID")}
               </div>
             </div>
           ))
         ) : (
           <p className="text-gray-500 text-center mt-10">
-            Belum ada data Face Detection.
+            Belum ada data {activeTab === "journal" ? "Jurnal" : "Face Detection"}.
           </p>
         )}
       </div>
+
+
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-lg w-[500px]">
+            <h2 className="text-xl font-bold mb-2 text-primary-500">
+              {selectedItem.mood || "Tanpa Mood"}
+            </h2>
+            <p className="text-gray-700">{selectedItem.content || selectedItem.description}</p>
+
+            <button
+              onClick={() => setSelectedItem(null)}
+              className="mt-5 px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
