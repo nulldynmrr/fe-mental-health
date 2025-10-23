@@ -2,18 +2,18 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { CgMoreVertical } from "react-icons/cg";
-import ChatUser from "./user";
-import ChatBot from "./bot";
 import { FaArrowUp, FaCirclePlus } from "react-icons/fa6";
+import ChatUser from "./user";
+import request from "@/utils/request";
 
-export default function ChatPage() {
+const ChatPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [replyTo, setReplyTo] = useState(null);
-  const chatEndRef = useRef(null);
   const [showMenu, setShowMenu] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const chatEndRef = useRef(null);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -23,54 +23,95 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    if (editingId) {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === editingId ? { ...msg, text: input } : msg
-        )
-      );
-      setEditingId(null);
-      setInput("");
-      return;
-    }
-
-    const userMsg = {
-      id: Date.now(),
-      sender: "user",
-      text: input,
-      replyTo: replyTo ? replyTo.text : null,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await request.get("/message");
+        if (res?.data?.data) {
+          setMessages(
+            res.data.data.map((m) => ({
+              id: m.id,
+              sender: "user",
+              text: m.content,
+              replyTo: m.parentId ? `Reply ke #${m.parentId}` : null,
+              time: new Date(m.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Gagal fetch message:", err);
+      }
     };
+    fetchMessages();
+  }, []);
 
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setReplyTo(null);
-    setIsGenerating(true);
+  const handleSend = async () => {
+    if (isSending || !input.trim()) return;
 
-    setTimeout(() => {
-      const botMsg = {
-        id: Date.now() + 1,
-        sender: "bot",
-        text: `Aku ngerti kok... "${userMsg.text}" itu pasti berat buat kamu. Cerita aja pelan-pelan, ya.`,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, botMsg]);
-      setIsGenerating(false);
-    }, 1200);
+    try {
+      setIsSending(true);
+
+      if (editingId) {
+        const res = await request.put(`/message/${editingId}`, {
+          content: input,
+        });
+        if (res?.data?.data) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === editingId
+                ? { ...msg, text: res.data.data.content }
+                : msg
+            )
+          );
+        }
+        setEditingId(null);
+        setInput("");
+        return;
+      }
+
+      const res = await request.post("/message", {
+        content: input,
+        parentId: replyTo ? replyTo.id : null,
+      });
+
+      if (res?.data?.data) {
+        const newMsg = {
+          id: res.data.data.id,
+          sender: "user",
+          text: res.data.data.content,
+          replyTo: replyTo ? replyTo.text : null,
+          time: new Date(res.data.data.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setMessages((prev) => [...prev, newMsg]);
+        setInput("");
+        setReplyTo(null);
+      }
+    } catch (err) {
+      console.error("Gagal kirim pesan:", err);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleEdit = (id, text) => {
     setEditingId(id);
     setInput(text);
+  };
+
+  const handleDeleteMessage = async (id) => {
+    if (!window.confirm("Hapus pesan ini?")) return;
+    try {
+      await request.delete(`/message/${id}`);
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    } catch (err) {
+      console.error("Gagal hapus pesan:", err);
+    }
   };
 
   const handleNewChat = () => {
@@ -80,13 +121,19 @@ export default function ChatPage() {
     setReplyTo(null);
   };
 
-  const handleReply = (text) => {
-    setReplyTo({ text });
+  const handleReply = (msg) => {
+    setReplyTo({ id: msg.id, text: msg.text });
   };
 
-  const handleDeleteChat = () => {
+  const handleDeleteChat = async () => {
     if (window.confirm("Apakah kamu yakin ingin menghapus semua percakapan?")) {
-      setMessages([]);
+      try {
+        const allIds = messages.map((m) => m.id);
+        await Promise.all(allIds.map((id) => request.delete(`/message/${id}`)));
+        setMessages([]);
+      } catch (err) {
+        console.error("Gagal hapus semua pesan:", err);
+      }
     }
     setShowMenu(false);
   };
@@ -94,10 +141,7 @@ export default function ChatPage() {
   return (
     <div className="flex flex-col max-w-8xl h-[85vh] border border-neut-200 rounded-xl mx-auto mt-15">
       <div className="relative flex items-center justify-end bg-primary-500 text-white px-4 py-2 rounded-t-xl">
-        <button
-          onClick={() => setShowMenu((prev) => !prev)}
-          className="relative"
-        >
+        <button onClick={() => setShowMenu((prev) => !prev)} className="relative">
           <CgMoreVertical className="text-xl cursor-pointer" />
         </button>
 
@@ -119,6 +163,7 @@ export default function ChatPage() {
         )}
       </div>
 
+    
       <div className="flex flex-col flex-1 bg-white p-6 overflow-y-auto gap-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-neut-400">
@@ -126,34 +171,32 @@ export default function ChatPage() {
             <p className="text-sm">Mulai berkeluh kesah di sini...</p>
           </div>
         ) : (
-          messages.map((msg) =>
-            msg.sender === "bot" ? (
-              <ChatBot key={msg.id} text={msg.text} time={msg.time} />
-            ) : (
-              <div key={msg.id} className="flex flex-col">
-                {msg.replyTo && (
-                  <div className="ml-auto mb-1 max-w-[70%] text-xs text-neut-400 italic border-l-2 border-primary-300 pl-2">
-                    Membalas: “{msg.replyTo}”
-                  </div>
-                )}
-                <ChatUser
-                  text={msg.text}
-                  time={msg.time}
-                  onEdit={() => handleEdit(msg.id, msg.text)}
-                  onReply={() => handleReply(msg.text)}
-                />
-              </div>
-            )
-          )
+          messages.map((msg) => (
+            <div key={msg.id} className="flex flex-col">
+              {msg.replyTo && (
+                <div className="ml-auto mb-1 max-w-[70%] text-xs text-neut-400 italic border-l-2 border-primary-300 pl-2">
+                  Membalas: “{msg.replyTo}”
+                </div>
+              )}
+              <ChatUser
+                text={msg.text}
+                time={msg.time}
+                onEdit={() => handleEdit(msg.id, msg.text)}
+                onReply={() => handleReply(msg)}
+                onDelete={() => handleDeleteMessage(msg.id)}
+              />
+            </div>
+          ))
         )}
         <div ref={chatEndRef} />
       </div>
 
+    
       {replyTo && (
         <div className="px-5 pb-2 text-sm text-neut-600 flex justify-between items-center">
           <div className="truncate max-w-[85%]">
             <span className="text-primary-600 font-medium">Membalas:</span> “
-            {replyTo.text}”
+            {replyTo?.text || "(pesan dihapus)"}”
           </div>
           <button
             onClick={() => setReplyTo(null)}
@@ -176,27 +219,25 @@ export default function ChatPage() {
           <input
             type="text"
             placeholder={
-              isGenerating
-                ? "Tunggu sebentar..."
-                : editingId
+              editingId
                 ? "Edit pesanmu..."
-                : "Tanyakan sesuatu di sini..."
+                : isSending
+                ? "Mengirim..."
+                : "Tulis pesan di sini..."
             }
             className="flex-1 outline-none border-none text-[15px] placeholder-neut-300"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            disabled={isGenerating}
+            disabled={isSending}
           />
 
           <button
             onClick={handleSend}
             className={`bg-primary-500 text-white p-2 rounded-lg transition ${
-              isGenerating
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-primary-600"
+              isSending ? "opacity-50 cursor-not-allowed" : "hover:bg-primary-600"
             }`}
-            disabled={isGenerating}
+            disabled={isSending}
           >
             <FaArrowUp className="text-sm" />
           </button>
@@ -204,4 +245,6 @@ export default function ChatPage() {
       </div>
     </div>
   );
-}
+};
+
+export default ChatPage;
