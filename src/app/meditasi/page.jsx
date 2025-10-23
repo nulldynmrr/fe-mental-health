@@ -6,45 +6,101 @@ import MusicCard from "@/components/music/card";
 import Player from "@/components/music/player";
 import Footer from "@/components/footer/page";
 import SearchBar from "@/components/music/search";
-import { playlistData } from "@/utils/playlist";
+import dynamic from "next/dynamic";
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+import request from "@/utils/request";
 
 const Meditasi = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [playlists, setPlaylists] = useState([]);
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [favorites, setFavorites] = useState([]);
-
   const [currentPlaylistContext, setCurrentPlaylistContext] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("mh_favorites");
-      if (raw) setFavorites(JSON.parse(raw));
-    } catch (e) {
-      console.error("Failed parse favorites", e);
-    }
+    const fetchMeditations = async () => {
+      try {
+        const [resMeditasi, resAlam] = await Promise.all([
+          request.get("/meditation?type=meditasi"),
+          request.get("/meditation?type=alam"),
+        ]);
+
+        if (resMeditasi.code !== 200 || resAlam.code !== 200)
+          throw new Error("Gagal fetch data");
+
+        const playlistsData = [
+          {
+            category: "Meditasi",
+            tracks: resMeditasi.data.map((item) => ({
+              id: item.meditation_id,
+              title: item.title,
+              description: item.description, 
+              thumbnail: item.thumbnailUrl,
+              mediaUrl: item.mediaUrl,
+              duration: item.duration,
+              type: item.type,
+            })),
+          },
+          {
+            category: "Alam",
+            tracks: resAlam.data.map((item) => ({
+              id: item.meditation_id,
+              title: item.title,
+              description: item.description,
+              thumbnail: item.thumbnailUrl,
+              mediaUrl: item.mediaUrl,
+              duration: item.duration,
+              type: item.type,
+            })),
+          },
+        ];
+
+        setPlaylists(playlistsData);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMeditations();
   }, []);
 
 
   useEffect(() => {
-    try {
-      localStorage.setItem("mh_favorites", JSON.stringify(favorites));
-    } catch (e) {
-      console.error("Failed save favorites", e);
-    }
-  }, [favorites]);
+    const fetchFavorites = async () => {
+      try {
+        const res = await request.get("/meditation/meditate-favorite");
+        const data = res.data.map((item) => ({
+          id: item.meditation_id,
+          title: item.title,
+          artist: item.description,
+          thumbnail: item.thumbnailUrl?.startsWith("http")
+            ? item.thumbnailUrl
+            : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+          mediaUrl: item.mediaUrl?.startsWith("http")
+            ? item.mediaUrl
+            : `${process.env.NEXT_PUBLIC_API_URL}${item.mediaUrl}`,
+          duration: item.duration,
+        }));
+        setFavorites(data);
+      } catch (err) {
+        console.error("Gagal fetch favorite:", err);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
 
   const _keyOf = (t) => (t.id ? `${t.id}` : `${t.title}||${t.artist}`);
 
   const toggleFavorite = (track) => {
     const key = _keyOf(track);
     const exists = favorites.some((f) => _keyOf(f) === key);
-    if (exists) {
-      setFavorites((prev) => prev.filter((f) => _keyOf(f) !== key));
-    } else {
-      setFavorites((prev) => [track, ...prev]);
-    }
+    if (exists) setFavorites((prev) => prev.filter((f) => _keyOf(f) !== key));
+    else setFavorites((prev) => [track, ...prev]);
   };
 
   const handlePlay = (track, context) => {
@@ -53,43 +109,40 @@ const Meditasi = () => {
     setIsPlaying(true);
   };
 
-  const handlePauseToggle = () => {
-    setIsPlaying((s) => !s);
-  };
-
+  const handlePauseToggle = () => setIsPlaying((s) => !s);
 
   const getCurrentPlaylistArray = () => {
     if (!currentPlaylistContext) return null;
     if (currentPlaylistContext.type === "favorites") return favorites;
     if (currentPlaylistContext.type === "category") {
       const idx = currentPlaylistContext.categoryIdx;
-      const list = playlistData[idx];
+      const list = playlists[idx];
       return list ? list.tracks : null;
     }
     return null;
   };
 
-  
   const handleNext = () => {
     const arr = getCurrentPlaylistArray();
     if (!arr || !currentTrack) return;
     const idx = arr.findIndex((t) => _keyOf(t) === _keyOf(currentTrack));
-    if (idx === -1) return;
-    const next = arr[idx + 1] || arr[0]; 
-    if (next) {
-      handlePlay(next, currentPlaylistContext);
-    }
+    const next = arr[idx + 1] || arr[0];
+    if (next) handlePlay(next, currentPlaylistContext);
   };
 
   const handlePrev = () => {
     const arr = getCurrentPlaylistArray();
     if (!arr || !currentTrack) return;
     const idx = arr.findIndex((t) => _keyOf(t) === _keyOf(currentTrack));
-    if (idx === -1) return;
-    const prev = arr[idx - 1] || arr[arr.length - 1]; 
-    if (prev) {
-      handlePlay(prev, currentPlaylistContext);
-    }
+    const prev = arr[idx - 1] || arr[arr.length - 1];
+    if (prev) handlePlay(prev, currentPlaylistContext);
+  };
+
+  const getYouTubeId = (url) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
   };
 
   return (
@@ -106,12 +159,17 @@ const Meditasi = () => {
 
         <div className="mt-10">
           <SearchBar onSearch={setSearchTerm} />
-          <MusicCard
-            playlists={playlistData}
-            favorites={favorites}
-            searchTerm={searchTerm}
-            onPlay={(track, ctx) => handlePlay(track, ctx)}
-          />
+
+          {loading ? (
+            <p className="text-center text-neut-600">Loading...</p>
+          ) : (
+            <MusicCard
+              playlists={playlists}
+              favorites={favorites}
+              searchTerm={searchTerm}
+              onPlay={(track, ctx) => handlePlay(track, ctx)}
+            />
+          )}
 
           <Player
             currentTrack={currentTrack}
@@ -128,6 +186,22 @@ const Meditasi = () => {
             onNext={handleNext}
             onPrev={handlePrev}
           />
+
+          {currentTrack && (
+            <div className="hidden">
+              <ReactPlayer
+                url={`https://www.youtube.com/watch?v=${getYouTubeId(
+                  currentTrack.mediaUrl
+                )}`}
+                playing={isPlaying}
+                controls={false}
+                width="0"
+                height="0"
+                volume={0.8}
+                onEnded={handleNext}
+              />
+            </div>
+          )}
         </div>
       </div>
 
