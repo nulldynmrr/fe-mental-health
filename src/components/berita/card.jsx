@@ -13,8 +13,10 @@ const NewsCard = () => {
   const fetchMindfulNews = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await request.get("/mindful-news?page=2");
+      const res = await request.get("/mindful-news?page=1");
+      const ress = await request.get("/mindful-news?page=2");
       const rawData = res.data?.data;
+      const rawDataa = ress.data?.data;
 
       const list = Array.isArray(rawData)
         ? rawData
@@ -22,7 +24,15 @@ const NewsCard = () => {
         ? rawData.data
         : [];
 
-      const mapped = list.map((item) => ({
+      const listt = Array.isArray(rawDataa)
+        ? rawDataa
+        : rawDataa?.data && Array.isArray(rawDataa.data)
+        ? rawDataa.data
+        : [];
+
+      const combinedList = [...list, ...listt];
+
+      const mapped = combinedList.map((item) => ({
         id: item.news_id,
         title: item.title,
         description: item.description,
@@ -66,10 +76,10 @@ const NewsCard = () => {
           <div
             key={article.id}
             style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.5)" }}
-            className="bg-white rounded-xl overflow-hidden border border-gray-200 pt-4 flex flex-col h-full"
+            className="bg-white rounded-lg overflow-hidden pt-4 flex flex-col h-full"
           >
             <div className="w-full px-4">
-              <div className="relative w-full aspect-[16/9] overflow-hidden rounded-md bg-gray-100">
+              <div className="relative w-full aspect-[16/9] overflow-hidden rounded-sm bg-gray-100">
                 <Image
                   src={article.imageUrl}
                   alt={article.title}
@@ -82,7 +92,7 @@ const NewsCard = () => {
 
             <div className="p-4 flex flex-col h-full">
               <div className="flex flex-col gap-3">
-                <div className="flex items-center text-gray-500 text-sm gap-2">
+                <div className="flex items-center text-neut-500 text-sm gap-2">
                   <img
                     src={"/assets/icons/calendar.svg"}
                     alt="calendar"
@@ -100,8 +110,8 @@ const NewsCard = () => {
                 </p>
               </div>
 
-              <div className="mt-auto">
-                <div className="flex flex-row gap-3 mt-4">
+              <div className="mt-auto ">
+                <div className="flex flex-row gap-3 mt-4 ">
                   <Image
                     src={article.imageUrl}
                     alt="Profile"

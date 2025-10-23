@@ -36,7 +36,7 @@ const Meditasi = () => {
             tracks: resMeditasi.data.map((item) => ({
               id: item.meditation_id,
               title: item.title,
-              description: item.description, 
+              description: item.description,
               thumbnail: item.thumbnailUrl,
               mediaUrl: item.mediaUrl,
               duration: item.duration,
@@ -68,26 +68,24 @@ const Meditasi = () => {
     fetchMeditations();
   }, []);
 
-
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
         const res = await request.get("/meditation/meditate-favorite");
-        const data = res.data.map((item) => ({
-          id: item.meditation_id,
-          title: item.title,
-          artist: item.description,
-          thumbnail: item.thumbnailUrl?.startsWith("http")
-            ? item.thumbnailUrl
-            : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
-          mediaUrl: item.mediaUrl?.startsWith("http")
-            ? item.mediaUrl
-            : `${process.env.NEXT_PUBLIC_API_URL}${item.mediaUrl}`,
-          duration: item.duration,
-        }));
-        setFavorites(data);
-      } catch (err) {
-        console.error("Gagal fetch favorite:", err);
+        if (res.code === 200 && Array.isArray(res.data)) {
+          const mapped = res.data.map((item) => ({
+            id: item.meditation_id,
+            title: item.title,
+            description: item.description,
+            thumbnail: item.thumbnailUrl,
+            mediaUrl: item.mediaUrl,
+            duration: item.duration,
+            type: item.type,
+          }));
+          setFavorites(mapped);
+        }
+      } catch (e) {
+        console.error("Gagal fetch favorites:", e);
       }
     };
 
@@ -96,13 +94,29 @@ const Meditasi = () => {
 
   const _keyOf = (t) => (t.id ? `${t.id}` : `${t.title}||${t.artist}`);
 
-  const toggleFavorite = (track) => {
+  
+  const toggleFavorite = async (track) => {
     const key = _keyOf(track);
     const exists = favorites.some((f) => _keyOf(f) === key);
-    if (exists) setFavorites((prev) => prev.filter((f) => _keyOf(f) !== key));
-    else setFavorites((prev) => [track, ...prev]);
+
+    try {
+      if (exists) {
+        // hapus dari favorite
+        await request.delete(`/meditation/meditate-favorite/${track.id}`);
+        setFavorites((prev) => prev.filter((f) => _keyOf(f) !== key));
+      } else {
+        // tambahkan ke favorite
+        await request.post("/meditation/meditate-favorite", {
+          meditation_id: track.id,
+        });
+        setFavorites((prev) => [track, ...prev]);
+      }
+    } catch (err) {
+      console.error("Gagal ubah favorite:", err);
+    }
   };
 
+  
   const handlePlay = (track, context) => {
     setCurrentTrack(track);
     setCurrentPlaylistContext(context || null);
@@ -148,7 +162,6 @@ const Meditasi = () => {
   return (
     <>
       <Navbar />
-
       <div className="p-6 md:px-20 md:py-12">
         <Breadcrumb
           items={[
@@ -204,7 +217,6 @@ const Meditasi = () => {
           )}
         </div>
       </div>
-
       <Footer />
     </>
   );

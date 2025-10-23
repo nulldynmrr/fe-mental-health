@@ -11,16 +11,27 @@ const VideoCards = () => {
   const fetchVideos = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await request.get("/video?page=2");
-      const rawData = res.data?.data;
+      const res1 = await request.get("/video?page=1");
+      const res2 = await request.get("/video?page=2");
 
-      const list = Array.isArray(rawData)
-        ? rawData
-        : rawData?.data && Array.isArray(rawData.data)
-        ? rawData.data
+      const rawData1 = res1.data?.data;
+      const rawData2 = res2.data?.data;
+
+      const list1 = Array.isArray(rawData1)
+        ? rawData1
+        : rawData1?.data && Array.isArray(rawData1.data)
+        ? rawData1.data
         : [];
 
-      const mapped = list.map((item) => ({
+      const list2 = Array.isArray(rawData2)
+        ? rawData2
+        : rawData2?.data && Array.isArray(rawData2.data)
+        ? rawData2.data
+        : [];
+
+      const combinedList = [...list1, ...list2];
+
+      const mapped = combinedList.map((item) => ({
         id: item.video_id,
         title: item.title,
         description: item.description,
@@ -72,54 +83,59 @@ const VideoCards = () => {
   }
 
   return (
-    <section className="mx-auto px-2 py-5">
-      <div className="flex flex-wrap gap-4 justify-center">
-        {displayedVideos.map((video, idx) => (
+    <section className="max-w-7xl mx-auto px-4 py-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {displayedVideos.map((video) => (
           <div
-            key={idx}
-            style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.5)" }}
-            className="
-            bg-white rounded-xl pt-4 border-2 border-transparent hover:border-primary-500 transition overflow-hidden
-            cursor-pointer
-            flex-[1_1_calc(100%-1rem)]
-            sm:flex-[1_1_calc(50%-1.25rem)]
-            lg:flex-[1_1_calc(25%-1.25rem)]
-            h-auto
-            max-w-[400px] mx-auto
-          "
+            key={video.id}
+            style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.3)" }}
+            className="bg-white rounded-xl pt-4 border-2 border-transparent hover:border-primary-500 transition overflow-hidden flex-[1_1_calc(25%-1.5rem)] cursor-pointer h-auto"
           >
-            <div className="relative aspect-[16/9] cursor-pointer">
-              <img
-                src={`https://img.youtube.com/vi/${getYouTubeId(
-                  video.videoUrl
-                )}/hqdefault.jpg`}
-                alt={video.title}
-                className="w-full h-full"
-              />
-              <button className="absolute inset-0 flex items-center justify-center cursor-pointer">
+            <div className="w-full px-4">
+              <div className="relative w-full aspect-[16/9] overflow-hidden rounded-sm bg-gray-100">
                 <img
-                  src="/assets/icons/play.svg"
-                  alt="Play"
-                  className="w-10 h-10"
+                  src={`https://img.youtube.com/vi/${getYouTubeId(
+                    video.videoUrl
+                  )}/hqdefault.jpg`}
+                  alt={video.title}
+                  className="object-cover object-center w-full h-full cursor-pointer"
                 />
-              </button>
-            </div>
-            <div className="p-3 py-5">
-              <div className="flex items-center text-gray-500 text-sm mb-2 gap-2">
-                <img
-                  src="/assets/icons/calendar.svg"
-                  alt="calendar"
-                  className="w-4 h-4"
-                />
-                {video.date}
+
+                <button className="absolute inset-0 flex items-center justify-center cursor-pointer">
+                  <img
+                    src="/assets/icons/play.svg"
+                    alt="Play"
+                    className="w-10 h-10"
+                  />
+                </button>
               </div>
-              <h3 className="font-semibold text-lg mb-1">{video.title}</h3>
-              <p className="text-gray-600 text-sm">{video.description}</p>
+            </div>
+
+            <div className="p-4 flex flex-col h-full">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center text-neut-500 text-sm gap-2">
+                  <img
+                    src={"/assets/icons/calendar.svg"}
+                    alt="calendar"
+                    className="w-4 h-4"
+                  />
+                  {video.date}
+                </div>
+
+                <h3 className="font-semibold text-base leading-snug text-neut-900 line-clamp-2">
+                  {video.title}
+                </h3>
+
+                <p className="text-neut-600 text-sm line-clamp-3">
+                  {video.description}
+                </p>
+              </div>
             </div>
           </div>
         ))}
       </div>
-      <div className="flex justify-end items-end mt-10">
+
+      <div className="flex justify-end items-end mt-10 border-t border-neut-50 pt-3">
         <button
           onClick={() => setExpanded(!expanded)}
           className="bg-primary-500 text-white px-6 py-2 rounded-lg hover:bg-primary-600 transition cursor-pointer"
