@@ -10,15 +10,12 @@ const Visualize = () => {
   const [summary, setSummary] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       let url = "";
-
-      const today = new Date().toISOString().split("T")[0]; // format YYYY-MM-DD
-      const dateToUse = selectedDate || today;
-
       if (activeTab === "journal") {
         url = `/journal`;
       } else {
@@ -26,8 +23,23 @@ const Visualize = () => {
       }
 
       const response = await request.get(url);
-      const data = response.data.data?.data;
-      setSummary(Array.isArray(data) ? data : data ? [data] : []);
+      const rawData = response.data?.data;
+
+      let dataArray = Array.isArray(rawData)
+        ? rawData
+        : rawData
+        ? [rawData]
+        : [];
+
+      if (selectedDate) {
+        const dateString = new Date(selectedDate).toISOString().split("T")[0];
+        dataArray = dataArray.filter((item) => {
+          const created = new Date(item.createdAt).toISOString().split("T")[0];
+          return created === dateString;
+        });
+      }
+
+      setSummary(dataArray);
     } catch (err) {
       if (err.response && err.response.status === 404) {
         setSummary([]);
@@ -44,6 +56,19 @@ const Visualize = () => {
     fetchData();
   }, [activeTab, selectedDate]);
 
+  
+  const fetchDetailById = async (id) => {
+    try {
+      const url =
+        activeTab === "journal" ? `/journal/${id}` : `/face-detection/${id}`;
+      const response = await request.get(url);
+      setSelectedItem(response.data?.data);
+    } catch (err) {
+      console.error("Gagal ambil detail:", err);
+      toast.error("Gagal mengambil data detail.");
+    }
+  };
+
   return (
     <>
       <Upper setSelectedDate={setSelectedDate} />
@@ -57,7 +82,8 @@ const Visualize = () => {
             summary.map((item, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
+                onClick={() => fetchDetailById(item.id)} 
+                className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow cursor-pointer hover:shadow-md"
               >
                 <div className="flex flex-row md:flex-col items-start pl-10 w-1/5">
                   <h2 className="text-2xl font-bold text-primary-500">
@@ -97,7 +123,8 @@ const Visualize = () => {
           summary.map((item, index) => (
             <div
               key={index}
-              className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow"
+              onClick={() => fetchDetailById(item.id)}
+              className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow cursor-pointer hover:shadow-md"
             >
               <div className="flex flex-col items-start pl-10 w-1/5">
                 <h2 className="text-2xl font-bold text-primary-500">
@@ -140,6 +167,30 @@ const Visualize = () => {
           </p>
         )}
       </div>
+
+
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-lg w-[500px]">
+            <h2 className="text-xl font-bold mb-2 text-primary-500">
+              {selectedItem.mood || "Tanpa Mood"}
+            </h2>
+            <p className="text-gray-700">
+              {selectedItem.content ||
+                selectedItem.description ||
+                "Tidak ada detail."}
+            </p>
+            <div className="text-right">
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="mt-5 px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
