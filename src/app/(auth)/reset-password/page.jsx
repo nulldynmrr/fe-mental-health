@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react"; // ✅ tambahkan useEffect
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { LuLock } from "react-icons/lu";
@@ -44,7 +44,11 @@ const newPassword = () => {
 
   useEffect(() => {
     const userId = searchParams.get("user");
-    setFormData((prev) => ({ ...prev, id: userId || "" }));
+    if (!userId) {
+      toast.error("User ID tidak ditemukan");
+      return;
+    }
+    setFormData((prev) => ({ ...prev, id: userId }));
   }, [searchParams]);
 
   const onChange = (e) => {
@@ -57,6 +61,12 @@ const newPassword = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.id) {
+      toast.error("User ID tidak valid");
+      return;
+    }
+
     setLoading(true);
 
     const validations = regisSchema.safeParse(formData);
@@ -74,7 +84,11 @@ const newPassword = () => {
     try {
       const response = await request.post(
         "/auth/reset-new_password",
-        formData,
+        {
+          new_password: formData.new_password,
+          confirm_password: formData.confirm_password,
+          id: formData.id,
+        },
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -83,6 +97,7 @@ const newPassword = () => {
       if (response.status === 200 || response.data.code === 201) {
         toast.dismiss();
         toast.success("Password baru berhasil dibuat");
+        router.push("/login");
         return;
       }
     } catch (err) {
