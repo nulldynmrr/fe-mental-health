@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react"; // ✅ tambahkan useEffect
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { LuLock } from "react-icons/lu";
 import InputField from "@/components/field/page";
@@ -11,7 +11,7 @@ import { z } from "zod";
 
 const regisSchema = z
   .object({
-    password: z
+    new_password: z
       .string()
       .regex(
         /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/,
@@ -19,25 +19,33 @@ const regisSchema = z
       )
       .min(8, "Password minimal 8 karakter")
       .min(1, "Password wajib diisi"),
-    confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi"),
+    confirm_password: z.string().min(1, "Konfirmasi new_password wajib diisi"),
+    id: z.string().min(1, "id user is a required field"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Konfirmasi password tidak cocok",
-    path: ["confirmPassword"],
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Konfirmasi new_password tidak cocok",
+    path: ["confirm_password"],
   })
   .passthrough();
 
 const newPassword = () => {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [formData, setFormData] = useState({
-    password: "",
-    confirmPassword: "",
+    new_password: "",
+    confirm_password: "",
+    id: "",
   });
   const [errors, setErrors] = useState({
-    password: "",
-    confirmPassword: "",
+    new_password: "",
+    confirm_password: "",
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const userId = searchParams.get("user");
+    setFormData((prev) => ({ ...prev, id: userId || "" }));
+  }, [searchParams]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -64,9 +72,13 @@ const newPassword = () => {
     }
 
     try {
-      const response = await request.post("/auth/reset-password", formData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await request.post(
+        "/auth/reset-new_password",
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (response.status === 200 || response.data.code === 201) {
         toast.dismiss();
@@ -78,14 +90,14 @@ const newPassword = () => {
       const errorMessage =
         err.response?.data?.errors?.message ||
         err.response?.data?.message ||
-        "Terjadi kesalahan saat memperbarui password.";
+        "Terjadi kesalahan saat memperbarui new_password.";
 
       toast.error(errorMessage);
 
       setErrors((prev) => ({
         ...prev,
-        password: "",
-        confirmPassword: "",
+        new_password: "",
+        confirm_password: "",
       }));
     } finally {
       setLoading(false);
@@ -117,23 +129,23 @@ const newPassword = () => {
               <div className="flex flex-col space-y-4">
                 <InputField
                   label="Masukkan Password baru"
-                  name="password"
+                  name="new_password"
                   type="password"
-                  placeholder="Masukkan password"
-                  value={formData.password}
+                  placeholder="Masukkan new_password"
+                  value={formData.new_password}
                   onChange={onChange}
-                  message={errors.password}
+                  message={errors.new_password}
                   icon={LuLock}
                 />
 
                 <InputField
                   label="Konfirmasi Password"
-                  name="confirmPassword"
+                  name="confirm_password"
                   type="password"
-                  placeholder="Masukkan password"
-                  value={formData.confirmPassword}
+                  placeholder="Masukkan new_password"
+                  value={formData.confirm_password}
                   onChange={onChange}
-                  message={errors.confirmPassword}
+                  message={errors.confirm_password}
                   icon={LuLock}
                 />
               </div>

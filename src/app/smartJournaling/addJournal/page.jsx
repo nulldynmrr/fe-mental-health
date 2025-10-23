@@ -94,16 +94,21 @@ const AddJournal = () => {
         toast.success("Journal berhasil dibuat untuk analisis");
 
         const journalId = postResponse.data.data?.journal_id;
-        const getResponse = await request.get(`/journal/${journalId}`);
+
+        const getResponse = await request.get("/journal");
 
         if (getResponse.status === 200 && getResponse.data.code === 200) {
-          const journalData = getResponse.data.data;
+          const allJournals = getResponse.data.data?.data || [];
 
-          // ✅ Pastikan mood & confidence tetap terbaca
+          const journalData =
+            allJournals.find((j) => j.journal_id === journalId) ||
+            allJournals[allJournals.length - 1];
+
           const mood =
             journalData?.mood && journalData.mood !== "undefined"
               ? journalData.mood
               : "unknown";
+
           const confidence =
             typeof journalData?.confidence === "number"
               ? journalData.confidence
@@ -250,7 +255,7 @@ const AddJournal = () => {
                 {review?.mood
                   ? review.mood === "joy"
                     ? "Bahagia"
-                    : review.mood === "sadness"
+                    : review.mood === "sad"
                     ? "Sedih"
                     : review.mood === "anger"
                     ? "Marah"
@@ -260,8 +265,8 @@ const AddJournal = () => {
                     ? "Jijik"
                     : review.mood === "surprise"
                     ? "Terkejut"
-                    : "Tidak Terdeksi"
-                  : "Tidak Terdeksi"}
+                    : "Tidak Terdeteksi"
+                  : "Tidak Terdeteksi"}
               </p>
               <p className="text-md text-black">
                 Confidence :{" "}
