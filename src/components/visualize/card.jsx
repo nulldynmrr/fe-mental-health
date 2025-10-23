@@ -117,7 +117,11 @@ const Visualize = () => {
                 </h2>
               </div>
 
-              <div className="flex-1 text-gray-700 leading-relaxed text-sm">
+              <div
+                className={`flex-1 text-gray-700 leading-relaxed text-sm ${
+                  activeTab !== "journal" ? "hidden" : ""
+                }`}
+              >
                 {item.text ||
                   item.description ||
                   "Tidak ada deskripsi untuk entri ini."}

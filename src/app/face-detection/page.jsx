@@ -17,7 +17,7 @@ const FaceDetection = () => {
   const [isLoadingResult, setIsLoadingResult] = useState(false);
   const [result, setResult] = useState(null);
 
-  // === Open Camera ===
+  // open camera
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -42,30 +42,6 @@ const FaceDetection = () => {
       }
     };
   }, []);
-
-  const getResult = async (id) => {
-    try {
-      const res = await request.get(`/face-detection/${id}`);
-      console.log("Response getResult:", res);
-
-      if (res.status === 200 && res.data?.data) {
-        const data = res.data.data;
-        setResult({
-          mood: data.mood || data.faceDetect?.mood,
-          confidence: data.confident || data.faceDetect?.confident,
-          imageUrl: data.faceDetect?.imageUrl,
-          detection_id: data.faceDetect?.detection_id || id,
-        });
-      } else {
-        toast.error("Data hasil belum siap, coba ulangi.");
-      }
-    } catch (err) {
-      console.error("Gagal mengambil hasil analisis:", err);
-      toast.error("Tidak dapat mengambil hasil dari server.");
-    } finally {
-      setIsLoadingResult(false);
-    }
-  };
 
   const onCaptureAnalyze = async () => {
     try {

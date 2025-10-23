@@ -6,7 +6,7 @@ import Choices from "@/components/visualize/options";
 
 const Visualisation = () => {
   return (
-   <>
+    <>
       <Navbar />
 
       <div className="p-6 md:px-20 md:py-12">
@@ -18,7 +18,7 @@ const Visualisation = () => {
         />
 
         <div className="mt-6">
-          <Visualize/>
+          <Visualize />
         </div>
       </div>
     </>
