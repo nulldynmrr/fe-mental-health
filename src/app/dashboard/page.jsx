@@ -7,27 +7,27 @@ import Footer from "@/components/footer/page";
 
 const Dashboard = () => {
   return (
-    <div>  
+    <div>
       <Navbar />
-    
+
       <div>
-      <UpperHero />
+        <UpperHero />
       </div>
-      
-      <div id="layanan"> 
-      <Services />
-      </div>
-      
-      <div>
-      <VideoSection />
+
+      <div id="layanan">
+        <Services />
       </div>
 
       <div>
-      <NewsSection />
+        <VideoSection />
+      </div>
+
+      <div>
+        <NewsSection />
       </div>
 
       <div id="hubungi-kami">
-      <Footer />
+        <Footer />
       </div>
     </div>
   );

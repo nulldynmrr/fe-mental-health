@@ -4,6 +4,7 @@ import Button from "../button/page";
 import Image from "next/image";
 import request from "@/utils/request";
 import { formatWaktu } from "@/utils/time";
+import Link from "next/link";
 
 const NewsCard = () => {
   const [articles, setArticles] = useState([]);
@@ -135,7 +136,9 @@ const NewsCard = () => {
                   <span className="text-gray-500 text-sm font-semibold">
                     {article.readingTime} Menit Baca
                   </span>
-                  <Button text="Baca Selengkapnya" variant="primary" />
+                  <Link href={`/mindful-news/${article.id}`}>
+                    <Button text="Baca Selengkapnya" variant="primary" />
+                  </Link>
                 </div>
               </div>
             </div>
