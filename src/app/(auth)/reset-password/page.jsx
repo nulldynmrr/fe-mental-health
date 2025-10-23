@@ -131,7 +131,7 @@ const newPassword = () => {
                   label="Masukkan Password baru"
                   name="new_password"
                   type="password"
-                  placeholder="Masukkan new_password"
+                  placeholder="Masukkan Password baru"
                   value={formData.new_password}
                   onChange={onChange}
                   message={errors.new_password}
@@ -142,7 +142,7 @@ const newPassword = () => {
                   label="Konfirmasi Password"
                   name="confirm_password"
                   type="password"
-                  placeholder="Masukkan new_password"
+                  placeholder="Masukkan Password Konfirmasi"
                   value={formData.confirm_password}
                   onChange={onChange}
                   message={errors.confirm_password}
