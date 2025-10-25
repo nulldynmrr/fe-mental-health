@@ -89,7 +89,7 @@ function NewPasswordForm() {
 
     try {
       const response = await request.post(
-        "/auth/reset-new_password",
+        "/auth/reset-password",
         {
           new_password: formData.new_password,
           confirm_password: formData.confirm_password,
