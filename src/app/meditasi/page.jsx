@@ -18,6 +18,7 @@ const Meditasi = () => {
   const [favorites, setFavorites] = useState([]);
   const [currentPlaylistContext, setCurrentPlaylistContext] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchMeditations = async () => {
@@ -27,30 +28,41 @@ const Meditasi = () => {
           request.get("/meditation?type=alam"),
         ]);
 
-        if (resMeditasi.code !== 200 || resAlam.code !== 200)
-          throw new Error("Gagal fetch data");
+        if (!resMeditasi || !resAlam) {
+          throw new Error("No response from server");
+        }
 
         const playlistsData = [
           {
             category: "Meditasi",
-            tracks: resMeditasi.data.map((item) => ({
+            tracks: (resMeditasi.data || []).map((item) => ({
               id: item.meditation_id,
               title: item.title,
               description: item.description,
-              thumbnail: item.thumbnailUrl,
-              mediaUrl: item.mediaUrl,
+              artist: item.description, 
+              thumbnail: item.thumbnailUrl?.startsWith("http")
+                ? item.thumbnailUrl
+                : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+              mediaUrl: item.mediaUrl?.startsWith("http")
+                ? item.mediaUrl
+                : `${process.env.NEXT_PUBLIC_API_URL}${item.mediaUrl}`,
               duration: item.duration,
               type: item.type,
             })),
           },
           {
             category: "Alam",
-            tracks: resAlam.data.map((item) => ({
+            tracks: (resAlam.data || []).map((item) => ({
               id: item.meditation_id,
               title: item.title,
               description: item.description,
-              thumbnail: item.thumbnailUrl,
-              mediaUrl: item.mediaUrl,
+              artist: item.description,
+              thumbnail: item.thumbnailUrl?.startsWith("http")
+                ? item.thumbnailUrl
+                : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+              mediaUrl: item.mediaUrl?.startsWith("http")
+                ? item.mediaUrl
+                : `${process.env.NEXT_PUBLIC_API_URL}${item.mediaUrl}`,
               duration: item.duration,
               type: item.type,
             })),
@@ -60,6 +72,7 @@ const Meditasi = () => {
         setPlaylists(playlistsData);
       } catch (err) {
         console.error("Fetch error:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -72,13 +85,18 @@ const Meditasi = () => {
     const fetchFavorites = async () => {
       try {
         const res = await request.get("/meditation/meditate-favorite");
-        if (res.code === 200 && Array.isArray(res.data)) {
+        if (res && Array.isArray(res.data)) {
           const mapped = res.data.map((item) => ({
             id: item.meditation_id,
             title: item.title,
             description: item.description,
-            thumbnail: item.thumbnailUrl,
-            mediaUrl: item.mediaUrl,
+            artist: item.description, 
+            thumbnail: item.thumbnailUrl?.startsWith("http")
+              ? item.thumbnailUrl
+              : `${process.env.NEXT_PUBLIC_API_URL}${item.thumbnailUrl}`,
+            mediaUrl: item.mediaUrl?.startsWith("http")
+              ? item.mediaUrl
+              : `${process.env.NEXT_PUBLIC_API_URL}${item.mediaUrl}`,
             duration: item.duration,
             type: item.type,
           }));
@@ -94,18 +112,15 @@ const Meditasi = () => {
 
   const _keyOf = (t) => (t.id ? `${t.id}` : `${t.title}||${t.artist}`);
 
-  
   const toggleFavorite = async (track) => {
     const key = _keyOf(track);
     const exists = favorites.some((f) => _keyOf(f) === key);
 
     try {
       if (exists) {
-        // hapus dari favorite
         await request.delete(`/meditation/meditate-favorite/${track.id}`);
         setFavorites((prev) => prev.filter((f) => _keyOf(f) !== key));
       } else {
-        // tambahkan ke favorite
         await request.post("/meditation/meditate-favorite", {
           meditation_id: track.id,
         });
@@ -116,7 +131,6 @@ const Meditasi = () => {
     }
   };
 
-  
   const handlePlay = (track, context) => {
     setCurrentTrack(track);
     setCurrentPlaylistContext(context || null);
@@ -153,11 +167,29 @@ const Meditasi = () => {
   };
 
   const getYouTubeId = (url) => {
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
   };
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="p-6 md:px-20 md:py-12">
+          <Breadcrumb
+            items={[
+              { label: "Dashboard", href: "/dashboard" },
+              { label: "Meditasi" },
+            ]}
+          />
+          <div className="text-center text-red-500 py-10">Error: {error}</div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -184,21 +216,23 @@ const Meditasi = () => {
             />
           )}
 
-          <Player
-            currentTrack={currentTrack}
-            isPlaying={isPlaying}
-            onTogglePlay={handlePauseToggle}
-            onToggleFavorite={() =>
-              currentTrack && toggleFavorite(currentTrack)
-            }
-            isFavorite={
-              currentTrack
-                ? favorites.some((f) => _keyOf(f) === _keyOf(currentTrack))
-                : false
-            }
-            onNext={handleNext}
-            onPrev={handlePrev}
-          />
+          {currentTrack && (
+            <Player
+              currentTrack={currentTrack}
+              isPlaying={isPlaying}
+              onTogglePlay={handlePauseToggle}
+              onToggleFavorite={() =>
+                currentTrack && toggleFavorite(currentTrack)
+              }
+              isFavorite={
+                currentTrack
+                  ? favorites.some((f) => _keyOf(f) === _keyOf(currentTrack))
+                  : false
+              }
+              onNext={handleNext}
+              onPrev={handlePrev}
+            />
+          )}
 
           {currentTrack && (
             <div className="hidden">

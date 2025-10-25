@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import request from "@/utils/request";
 import { formatWaktu } from "@/utils/time";
+import Link from "next/link";
 
 const VideoCards = () => {
   const [videos, setVideos] = useState([]);
@@ -86,10 +87,11 @@ const VideoCards = () => {
     <section className="max-w-7xl mx-auto px-4 py-10">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayedVideos.map((video) => (
-          <div
+          <Link
             key={video.id}
-            style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.3)" }}
+            href={`/dashboard/mindful-news/${video.id}`}
             className="bg-white rounded-xl pt-4 border-2 border-transparent hover:border-primary-500 transition overflow-hidden flex-[1_1_calc(25%-1.5rem)] cursor-pointer h-auto"
+            style={{ boxShadow: "0px 14px 50px rgba(197, 236, 255, 0.3)" }}
           >
             <div className="w-full px-4">
               <div className="relative w-full aspect-[16/9] overflow-hidden rounded-sm bg-gray-100">
@@ -131,7 +133,7 @@ const VideoCards = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

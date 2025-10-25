@@ -2,7 +2,7 @@ import Navbar from "@/components/navbar/page";
 import Breadcrumb from "@/components/breadcrumb/page";
 import React from "react";
 import NewsCard from "@/components/berita/card";
-import Berita from "@/components/berita/details";
+import Berita from "@/app/dashboard/mindful-news/[id]/details";
 
 const NewsPage = () => {
   return (
