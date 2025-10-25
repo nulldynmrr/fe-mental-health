@@ -26,7 +26,9 @@ const regisSchema = z
       .min(8, "Password minimal 8 karakter")
       .min(1, "Password wajib diisi"),
     confirm_password: z.string().min(1, "Konfirmasi new_password wajib diisi"),
-    id: z.string().min(1, "id user is a required field"),
+    id: z.union([z.string(), z.number()]).refine((val) => !!val, {
+      message: "id user is a required field",
+    }),
   })
   .refine((data) => data.new_password === data.confirm_password, {
     message: "Konfirmasi new_password tidak cocok",
@@ -54,7 +56,8 @@ function NewPasswordForm() {
       toast.error("User ID tidak ditemukan");
       return;
     }
-    setFormData((prev) => ({ ...prev, id: userId }));
+    // ubah ke number agar sesuai BE
+    setFormData((prev) => ({ ...prev, id: Number(userId) }));
   }, [searchParams]);
 
   const onChange = (e) => {
@@ -88,12 +91,19 @@ function NewPasswordForm() {
     }
 
     try {
+      // 👇 log dulu buat memastikan data dikirim sesuai
+      console.log("Payload dikirim ke BE:", {
+        new_password: formData.new_password,
+        confirm_password: formData.confirm_password,
+        id: Number(formData.id),
+      });
+
       const response = await request.post(
         "/auth/reset-password",
         {
           new_password: formData.new_password,
           confirm_password: formData.confirm_password,
-          id: formData.id,
+          id: Number(formData.id), // pastikan number
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -111,7 +121,7 @@ function NewPasswordForm() {
       const errorMessage =
         err.response?.data?.errors?.message ||
         err.response?.data?.message ||
-        "Terjadi kesalahan saat memperbarui new_password.";
+        "Terjadi kesalahan saat memperbarui password.";
 
       toast.error(errorMessage);
       setErrors((prev) => ({
@@ -176,6 +186,7 @@ function NewPasswordForm() {
                 fullWidth
               />
             </form>
+
             <div className="w-full self-end text-center text-sm mt-6">
               <span className="text-neut-500 font-medium">
                 Sudah Punya Akun?{" "}
