@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import MusicCard from "@/components/music/card";
-import Player from "@/components/music/Player";
+import Player from "@/components/music/player";
 
 const MusicSection = () => {
   const [playlists, setPlaylists] = useState([]);
