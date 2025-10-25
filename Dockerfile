@@ -1,12 +1,13 @@
-FROM node:20-alpine AS builder
+# Stage 1: Build
+FROM node:20 AS builder
 
 WORKDIR /app
 
-# 1. Pastikan package-lock.json ada, kalau tidak ganti ke `npm install`
+# 1. Copy package.json & package-lock.json dan install dependencies
 COPY package*.json ./
 RUN npm install
 
-# 2. Copy semua source code
+# 2. Copy semua source code termasuk tsconfig/json/jsconfig
 COPY . .
 
 # 3. Tambahkan environment variable agar build tidak error
@@ -16,11 +17,14 @@ ENV NEXT_PUBLIC_HOST=$NEXT_PUBLIC_HOST
 # 4. Jalankan build
 RUN npm run build
 
-# 5. Gunakan image ringan untuk menjalankan
-FROM node:20-alpine AS runner
+# Stage 2: Runner
+FROM node:20 AS runner
 
 WORKDIR /app
+
+# Copy hasil build dan node_modules
 COPY --from=builder /app ./
 
 EXPOSE 3001
+
 CMD ["npm", "start"]
