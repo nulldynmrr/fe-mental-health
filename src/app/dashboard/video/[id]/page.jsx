@@ -3,6 +3,7 @@ import VideoPage from "@/components/video/details";
 import Navbar from "@/components/navbar/page";
 import Breadcrumb from "@/components/breadcrumb/page";
 import VideoCards from "@/components/video/card";
+import Footer from "@/components/footer/page";
 
 const Vids = () => {
   return (
@@ -25,6 +26,7 @@ const Vids = () => {
       <div className="px-10">
         <VideoCards />
       </div>
+        <Footer/>
     </div>
   );
 };

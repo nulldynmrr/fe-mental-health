@@ -71,7 +71,6 @@ const MusicCard = ({
     );
   };
 
-  // FIX: Safe playlist finding function
   const findPlaylistIndex = (category) => {
     return playlists.findIndex((p) => p.category === category);
   };

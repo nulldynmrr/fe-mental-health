@@ -18,13 +18,13 @@ const MusicSection = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch meditation data
+    
         const [meditasiData, alamData, favoritesData] = await Promise.all([
           request.get("/meditation?type=meditasi"),
           request.get("/meditation?type=alam"),
           request.get("/meditation/meditate-favorite").catch(err => {
             console.warn("Failed to fetch favorites:", err);
-            return { data: [] }; // Return empty array if favorites fail
+            return { data: [] };
           })
         ]);
 
@@ -42,7 +42,7 @@ const MusicSection = () => {
             duration: item.duration,
           }));
 
-        // Set playlists
+       
         const playlistsData = [
           { 
             category: "Meditasi", 
@@ -56,7 +56,7 @@ const MusicSection = () => {
 
         setPlaylists(playlistsData);
         
-        // Set favorites
+     
         if (favoritesData.data) {
           setFavorites(normalizeData(favoritesData.data));
         }
