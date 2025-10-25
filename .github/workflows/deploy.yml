@@ -30,14 +30,16 @@ jobs:
             git remote -v
             git branch -vv
 
-            # Build ulang image Docker
-            docker build --no-cache -t mental_healt_fe .
+            # Build ulang image Docker dengan env variable
+            docker build --no-cache \
+              -t mental_healt_fe \
+              --build-arg NEXT_PUBLIC_HOST="${{ secrets.NEXT_PUBLIC_HOST }}" .
 
             # Stop & remove container lama kalau ada
             docker stop mental_healt-fe-server || true
             docker rm mental_healt-fe-server || true
 
-            # Run container baru dengan env & expose port
+            # Run container baru
             docker run -d \
               --name mental_healt-fe-server \
               -p 3001:3001 \
