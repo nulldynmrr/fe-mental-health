@@ -90,7 +90,7 @@ const newPassword = () => {
     }
 
     try {
-      const response = await request.post("/auth/reset-new_password", payload, {
+      const response = await request.post("/auth/reset-password", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
