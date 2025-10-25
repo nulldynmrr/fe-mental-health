@@ -1,0 +1,46 @@
+name: Auto Deploy Backend to VPS
+
+on:
+  push:
+    branches:
+      - dev  # ganti sesuai branch deploy kamu
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to VPS
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 28101
+          timeout: 60s
+          script: |
+            cd /opt/fe-mental-health
+
+            # Ambil kode terbaru
+            git pull origin dev
+            git status
+            git remote -v
+            git branch -vv
+
+            # Build ulang image Docker
+            docker build --no-cache -t mental_healt_fe .
+
+            # Stop & remove container lama kalau ada
+            docker stop mental_healt-fe-server || true
+            docker rm mental_healt-fe-server || true
+
+            # Run container baru dengan env & expose port
+            docker run -d \
+              --name mental_healt-fe-server \
+              -p 3001:3001 \
+              --restart unless-stopped \
+              -e NEXT_PUBLIC_HOST="${{ secrets.NEXT_PUBLIC_HOST }}" \
+              mental_healt_fe
