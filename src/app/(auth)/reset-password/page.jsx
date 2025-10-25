@@ -1,4 +1,6 @@
 "use client";
+
+import { Suspense } from "react";
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -9,6 +11,10 @@ import request from "@/utils/request";
 import toast from "react-hot-toast";
 import { z } from "zod";
 
+// supaya halaman ini tidak di-pre-render (karena pakai useSearchParams)
+export const dynamic = "force-dynamic";
+
+// schema validasi
 const regisSchema = z
   .object({
     new_password: z
@@ -28,7 +34,7 @@ const regisSchema = z
   })
   .passthrough();
 
-const newPassword = () => {
+function NewPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -108,7 +114,6 @@ const newPassword = () => {
         "Terjadi kesalahan saat memperbarui new_password.";
 
       toast.error(errorMessage);
-
       setErrors((prev) => ({
         ...prev,
         new_password: "",
@@ -165,7 +170,11 @@ const newPassword = () => {
                 />
               </div>
 
-              <Button variant="primary" text="Update Password" fullWidth />
+              <Button
+                variant="primary"
+                text={loading ? "Menyimpan..." : "Update Password"}
+                fullWidth
+              />
             </form>
             <div className="w-full self-end text-center text-sm mt-6">
               <span className="text-neut-500 font-medium">
@@ -183,6 +192,12 @@ const newPassword = () => {
       </div>
     </div>
   );
-};
+}
 
-export default newPassword;
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<p className="text-center mt-10">Memuat halaman...</p>}>
+      <NewPasswordForm />
+    </Suspense>
+  );
+}
