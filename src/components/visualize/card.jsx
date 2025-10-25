@@ -15,25 +15,28 @@ const Visualize = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      let url = "";
-      if (activeTab === "journal") {
-        url = `/journal`;
-      } else {
-        url = `/face-detection`;
-      }
+      let url =
+        activeTab === "journal"
+          ? `/statistic/journal-stats`
+          : `/statistic/face-stats`;
 
-      const response = await request.get(url);
-      const rawData = response.data?.data;
+      const response = await request.get(url, {
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
 
-      let dataArray = Array.isArray(rawData)
-        ? rawData
-        : rawData
-        ? [rawData]
-        : [];
+      const rawData = response.data?.data?.mood || [];
+
+      // let dataArray = Array.isArray(rawData)
+      //   ? rawData
+      //   : rawData
+      //   ? [rawData]
+      //   : [];
 
       if (selectedDate) {
         const dateString = new Date(selectedDate).toISOString().split("T")[0];
-        dataArray = dataArray.filter((item) => {
+        dataArray = rawData.filter((item) => {
           const created = new Date(item.createdAt).toISOString().split("T")[0];
           return created === dateString;
         });
@@ -56,7 +59,8 @@ const Visualize = () => {
     fetchData();
   }, [activeTab, selectedDate]);
 
-  
+  console.log("summary:", summary);
+
   const fetchDetailById = async (id) => {
     try {
       const url =
@@ -82,7 +86,7 @@ const Visualize = () => {
             summary.map((item, index) => (
               <div
                 key={index}
-                onClick={() => fetchDetailById(item.id)} 
+                onClick={() => fetchDetailById(item.id)}
                 className="flex justify-between items-center border border-blue-400 rounded-4xl px-10 py-5 transition-shadow cursor-pointer hover:shadow-md"
               >
                 <div className="flex flex-row md:flex-col items-start pl-10 w-1/5">
@@ -167,7 +171,6 @@ const Visualize = () => {
           </p>
         )}
       </div>
-
 
       {selectedItem && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">

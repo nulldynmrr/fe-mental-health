@@ -62,14 +62,22 @@ const newPassword = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.id) {
+    const userId = searchParams.get("user"); // ambil langsung dari URL
+    if (!userId) {
       toast.error("User ID tidak valid");
       return;
     }
 
     setLoading(true);
 
-    const validations = regisSchema.safeParse(formData);
+    // buat object payload
+    const payload = {
+      new_password: formData.new_password,
+      confirm_password: formData.confirm_password,
+      id: userId, // pastikan selalu ada
+    };
+
+    const validations = regisSchema.safeParse(payload);
 
     if (!validations.success) {
       const newErrors = {};
@@ -82,17 +90,9 @@ const newPassword = () => {
     }
 
     try {
-      const response = await request.post(
-        "/auth/reset-new_password",
-        {
-          new_password: formData.new_password,
-          confirm_password: formData.confirm_password,
-          id: formData.id,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const response = await request.post("/auth/reset-password", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
       if (response.status === 200 || response.data.code === 201) {
         toast.dismiss();
