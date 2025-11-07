@@ -41,7 +41,7 @@ const SmartJournaling = () => {
       );
       fetchAllJournal();
     } catch (err) {
-      toast.error("Jurnal gagal dihapus");
+      toast.error("Jurnal gagal di hapus");
     } finally {
       setOpenModal(false);
       setSelectedIds([]);
